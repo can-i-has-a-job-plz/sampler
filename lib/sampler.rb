@@ -1,5 +1,7 @@
-require "sampler/version"
+# frozen_string_literal: true
 
-module Sampler
+require 'sampler/version'
+
+module Sampler # :nodoc:
   # Your code goes here...
 end
