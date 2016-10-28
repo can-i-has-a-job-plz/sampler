@@ -12,7 +12,11 @@ module RequestHelper # :nodoc:
   end
 
   class SamplerApp # :nodoc:
-    def call(_env)
+    def call(env)
+      # Messing with env to be sure that event payload has original values
+      env['PATH_INFO'] = '/fake'
+      env['REQUEST_METHOD'] = 'MKCALENDAR'
+      env['QUERY_STRING'] = 'fake'
       Rack::Response.new('Whatever')
     end
   end
