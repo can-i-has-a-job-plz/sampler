@@ -13,4 +13,8 @@ describe Sampler::Railtie do
       should match_array(expected)
     end
   end
+
+  it 'should install Sampler middleware' do
+    expect(Rails.application.middleware).to include(Sampler::Middleware)
+  end
 end
