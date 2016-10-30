@@ -8,6 +8,7 @@ module Sampler
   autoload :Middleware, 'sampler/middleware'
   autoload :Subscriber, 'sampler/subscriber'
   autoload :Event, 'sampler/event'
+  autoload :FilterSet, 'sampler/filter_set'
 
   class << self
     attr_reader :subscriber
