@@ -7,6 +7,7 @@ module Sampler
   autoload :Configuration, 'sampler/configuration'
   autoload :Middleware, 'sampler/middleware'
   autoload :Subscriber, 'sampler/subscriber'
+  autoload :Event, 'sampler/event'
 
   class << self
     attr_reader :subscriber
