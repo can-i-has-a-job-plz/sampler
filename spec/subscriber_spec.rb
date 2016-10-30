@@ -7,10 +7,18 @@ describe Sampler::Subscriber, subscriber: true do
   end
 
   context 'subscription' do
+    let(:delegator) { ->(*) {} }
     let(:subscriber) { Sampler::Subscriber.new }
     subject(:notifier) { ActiveSupport::Notifications }
+    before do
+      allow(subscriber).to receive(:event_handler).and_return(delegator)
+    end
     it 'should be created with proper pattern' do
       should receive(:subscribe).with('request.sampler', anything)
+      subscriber.subscribe
+    end
+    it 'should be created with proper block' do
+      should receive(:subscribe).with(anything, delegator)
       subscriber.subscribe
     end
   end
