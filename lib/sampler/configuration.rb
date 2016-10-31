@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'active_support/hash_with_indifferent_access'
+
 module Sampler
   # Stores runtime Sampler configuration information.
   # @example Standard settings
@@ -6,13 +8,24 @@ module Sampler
   #       config.probe_class = Sample
   #       config.whitelist << 'example.com'
   #       config.blacklist << 'example.org'
+  #       config.tag_with 'slow', ->(event) { event.duration > 200 }
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm, :whitelist, :blacklist
+    attr_reader :probe_class, :probe_orm, :whitelist, :blacklist, :tags
 
     def initialize
       @whitelist = FilterSet.new
       @blacklist = FilterSet.new
+      @tags = HashWithIndifferentAccess.new
+    end
+
+    def tag_with(name, filter)
+      # TODO: check tag_filter for arity if Proc?
+      unless name.is_a?(String) || name.is_a?(Symbol)
+        raise ArgumentError, 'tag name should be a String or a Symbol'
+      end
+      return (@tags[name] ||= FilterSet.new) << filter if filter.is_a?(Proc)
+      raise ArgumentError, 'filter should be a Proc'
     end
 
     def probe_class=(klass)

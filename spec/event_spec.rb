@@ -42,4 +42,21 @@ describe Sampler::Event, type: :request do
     let(:somelist) { :blacklist }
     include_examples 'somelisted?'
   end
+
+  context '#tags' do
+    let(:payload) { {} }
+    let(:tags) { Sampler.configuration.tags }
+    before do
+      3.times do |n|
+        Sampler.configuration.tag_with "tag#{n}", ->(_e) { n != 1 }
+      end
+    end
+    it 'should call every filter_set with self' do
+      tags.each_value { |fs| expect(fs).to receive(:match).with(event) }
+      event.tags
+    end
+    it 'should return proper tags' do
+      expect(event.tags).to match_array(%w(tag0 tag2))
+    end
+  end
 end

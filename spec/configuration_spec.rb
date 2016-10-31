@@ -60,4 +60,42 @@ describe Sampler::Configuration do
       include_examples 'somelist'
     end
   end
+
+  context '#tag_with' do
+    let(:value) { ->(_e) {} }
+    let(:action) { -> { subject.tag_with 'name', value } }
+    let(:message) { 'filter should be a Proc' }
+    context 'after initialization' do
+      it { expect(subject.tags).to be_a(HashWithIndifferentAccess) }
+      it { expect(subject.tags).to be_empty }
+    end
+    it 'should create a new entry in the tags hash' do
+      expect(action).to change { subject.tags.key?('name') }.to(true)
+    end
+    context 'created entry for a tag' do
+      before { action.call }
+      it 'should be a FilterSet' do
+        expect(subject.tags['name']).to be_a(Sampler::FilterSet)
+      end
+      it 'should add filter to the tag entry' do
+        expect(subject.tags['name']).to include(value)
+      end
+    end
+    context 'when filter is a String' do
+      let(:value) { 'value' }
+      it { expect(action).to raise_error(ArgumentError).with_message(message) }
+    end
+    context 'when filter is a Regexp' do
+      let(:value) { /regexp/ }
+      it { expect(action).to raise_error(ArgumentError).with_message(message) }
+    end
+    context 'when tag name is a String' do
+      let(:action) { -> { subject.tag_with 'name', value } }
+      it { expect(action).not_to raise_error }
+    end
+    context 'when tag name is a Symbol' do
+      let(:action) { -> { subject.tag_with :name, value } }
+      it { expect(action).not_to raise_error }
+    end
+  end
 end
