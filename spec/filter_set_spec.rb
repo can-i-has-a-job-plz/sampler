@@ -102,4 +102,95 @@ describe Sampler::FilterSet do
       end
     end
   end
+
+  context '#match' do
+    subject(:match) { filter_set.match(event) }
+    let(:filters) { [] }
+    let(:filter_set) { Sampler::FilterSet.new(filters) }
+    let(:url) { 'http://example.com/some_path' }
+    let(:event) { instance_double(Sampler::Event) }
+    before do
+      allow(event).to receive(:url).and_return(url)
+    end
+
+    context 'when there is no filters' do
+      let(:filters) {}
+      it { should be(false) }
+    end
+
+    context 'when filter is a String' do
+      let(:filters) { %w(some_string) }
+      context 'when String is substring of url' do
+        let(:filters) { %w(.com/some) }
+        it { should be(true) }
+      end
+      context 'when String is not a substring of url' do
+        let(:filters) { %w(whatever) }
+        it { should be(false) }
+      end
+    end
+
+    context 'when filter is a Regexp' do
+      let(:filters) { [/something/] }
+      context 'when Regexp matches url' do
+        let(:filters) { [/example.com/] }
+        it { should be(true) }
+      end
+      context 'when Regexp does not match url' do
+        let(:filters) { [/ojab.ru/] }
+        it { should be(false) }
+      end
+    end
+
+    context 'when filter is a Proc' do
+      let(:filters) { [->(_e) {}] }
+      it 'should be called with event provided' do
+        expect(filters.first).to receive(:call).with(event)
+        match
+      end
+      context 'when Proc returns true' do
+        let(:filters) { [->(_e) { true }] }
+        it { should be(true) }
+      end
+      context 'when Proc returns false' do
+        let(:filters) { [->(_e) { false }] }
+        it { should be(false) }
+      end
+    end
+
+    context 'with multiple filters' do
+      # Workaround frozen string (url) stubbing
+      let(:url) { instance_double(String) }
+      before do
+        allow(event.url).to receive(:include?) do |substring|
+          'http://example.com/some_path'.include?(substring)
+        end
+      end
+
+      context 'when some filters match' do
+        let(:filters) { %w(something1 example something2) }
+        it { should eq(true) }
+        it 'should call all fillters prior to matcthing and a matching one' do
+          expect(event.url).to receive(:include?).with(filters.first).ordered
+          expect(event.url).to receive(:include?).with(filters.second).ordered
+          match
+        end
+        it 'should not call filters after successful one' do
+          expect(event.url).not_to receive(:include?).with(filters.third)
+          match
+        end
+      end
+
+      context 'when no filter matches' do
+        let(:filters) { %w(something1 something2 something3) }
+        it { should eq(false) }
+        it 'should call all filters' do
+          expect(event.url).to receive(:include?).with(filters.first).ordered
+          expect(event.url).to receive(:include?).with(filters.second).ordered
+          expect(event.url).to receive(:include?).with(filters.third).ordered
+          match
+        end
+      end
+    end
+  end
 end
