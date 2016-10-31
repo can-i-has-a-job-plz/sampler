@@ -4,9 +4,16 @@ module Sampler
   # @example Standard settings
   #     Sampler.configure do |config|
   #       config.probe_class = Sample
+  #       config.whitelist << 'example.com'
+  #       config.blacklist << 'example.org'
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm
+    attr_reader :probe_class, :probe_orm, :whitelist, :blacklist
+
+    def initialize
+      @whitelist = FilterSet.new
+      @blacklist = FilterSet.new
+    end
 
     def probe_class=(klass)
       # TODO: should we initialize it to some default value?

@@ -9,5 +9,13 @@ module Sampler
     PAYLOAD_KEYS.each do |m|
       define_method(m) { payload[m] }
     end
+
+    def whitelisted?
+      Sampler.configuration.whitelist.match(self)
+    end
+
+    def blacklisted?
+      Sampler.configuration.blacklist.match(self)
+    end
   end
 end

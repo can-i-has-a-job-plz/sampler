@@ -40,5 +40,24 @@ describe Sampler::Configuration do
         include_examples 'unsupported ORM'
       end
     end
+
+    shared_examples 'somelist' do
+      it { should respond_to(somelist) }
+      it 'should be FilterSet after initialize' do
+        expect(subject.send(somelist)).to be_a(Sampler::FilterSet)
+      end
+      it 'should be empty after initialize' do
+        expect(subject.send(somelist)).to be_empty
+      end
+    end
+
+    context 'whitelist' do
+      let(:somelist) { :whitelist }
+      include_examples 'somelist'
+    end
+    context 'black' do
+      let(:somelist) { :blacklist }
+      include_examples 'somelist'
+    end
   end
 end
