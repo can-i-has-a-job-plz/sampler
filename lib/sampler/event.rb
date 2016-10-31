@@ -17,5 +17,15 @@ module Sampler
     def blacklisted?
       Sampler.configuration.blacklist.match(self)
     end
+
+    def tags
+      @tags ||= config.tags.keys.select { |k| config.tags.fetch(k).match(self) }
+    end
+
+    private
+
+    def config
+      Sampler.configuration
+    end
   end
 end

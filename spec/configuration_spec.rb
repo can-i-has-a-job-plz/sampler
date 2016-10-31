@@ -60,4 +60,20 @@ describe Sampler::Configuration do
       include_examples 'somelist'
     end
   end
+
+  context '#tag_with' do
+    let(:action) { -> { subject.tag_with 'name', 'value' } }
+    it 'should create a new entry in the tags hash' do
+      expect(action).to change { subject.tags.key?('name') }.to(true)
+    end
+    context 'created entry for a tag' do
+      before { action.call }
+      it 'should be a FilterSet' do
+        expect(subject.tags['name']).to be_a(Sampler::FilterSet)
+      end
+      it 'should add filter to the tag entry' do
+        expect(subject.tags['name']).to include('value')
+      end
+    end
+  end
 end
