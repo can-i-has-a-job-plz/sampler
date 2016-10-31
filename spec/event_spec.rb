@@ -18,4 +18,28 @@ describe Sampler::Event, type: :request do
   end
 
   PAYLOAD_KEYS.each { |k| include_examples 'should have getter for key', k }
+
+  shared_examples 'somelisted?' do
+    let(:payload) { {} }
+    let(:result) { Object.new }
+    let(:list) { Sampler.configuration.send(somelist) }
+    before { allow(list).to receive(:match).and_return(result) }
+
+    it 'should match event against configured list' do
+      expect(list).to receive(:match).with(event)
+      event.send("#{somelist}ed?")
+    end
+    it 'should return match result' do
+      expect(event.send("#{somelist}ed?")).to be(result)
+    end
+  end
+
+  context 'whitelisted?' do
+    let(:somelist) { :whitelist }
+    include_examples 'somelisted?'
+  end
+  context 'blacklisted?' do
+    let(:somelist) { :blacklist }
+    include_examples 'somelisted?'
+  end
 end
