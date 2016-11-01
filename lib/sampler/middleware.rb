@@ -28,8 +28,11 @@ module Sampler
       # TODO: do we want values from request or from env?
       # TODO: is url with query string ok for us?
       # TODO: is request.path ok for endpoint?
-      { endpoint: request.path, url: request.url, method: request.method_symbol,
-        params: request.params, request: request }
+      payload = { endpoint: request.path, url: request.url,
+                  method: request.method_symbol, params: request.params,
+                  request: request, request_body: request.body.read }
+      request.body.rewind
+      payload
     end
   end
 end

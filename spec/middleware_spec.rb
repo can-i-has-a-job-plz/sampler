@@ -19,6 +19,18 @@ describe Sampler::Middleware, type: :request do
       expect(sampler_app).to receive(:call).with(original_env).and_call_original
       app.call(original_env.dup)
     end
+
+    context 'rack.input' do
+      before do
+        allow(sampler_app).to receive(:call) do |env|
+          Rack::Response.new(env['rack.input'].read)
+        end
+        post '/index', key: :value
+      end
+      it 'should not be modified' do
+        expect(last_response.body).to eq('key=value')
+      end
+    end
   end
 
   RSpec.shared_examples 'should contain original' do |key, value, attr = key|
@@ -38,10 +50,15 @@ describe Sampler::Middleware, type: :request do
       payload[:request].instance_variable_set(:@fullpath, nil)
       payload[:request].instance_variable_set(:@method, 'MKCALENDAR')
       payload[:request].env['action_dispatch.request.parameters'] = {}
+      # FIXME: see comment in RequestHelper
+      payload[:request].env['rack.input'] = StringIO.new('fake')
     end
     it { should have_key(:endpoint) }
     include_examples 'should contain original', :endpoint, '/index', :path
     it { should have_key(:request) }
+    it 'should contain ActionDispatch::Request as request' do
+      expect(payload[:request]).to be_a(ActionDispatch::Request)
+    end
     it { should have_key(:url) }
     include_examples 'should contain original', :url,
                      'http://example.org/index?x=1'
@@ -50,6 +67,13 @@ describe Sampler::Middleware, type: :request do
     it { should have_key(:params) }
     include_examples 'should contain original', :params, 'x' => '1',
                                                          'key' => 'value'
+    it { should have_key(:request_body) }
+    it 'should contain request body from orignal request' do
+      expect(payload[:request_body]).to eq('key=value')
+    end
+    it 'should contain request body that differs from payload[:request] one' do
+      expect(payload[:request_body]).not_to eq(payload[:request].body.read)
+    end
   end
 
   context 'when Rack app works ok' do
