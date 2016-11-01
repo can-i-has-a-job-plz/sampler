@@ -74,11 +74,26 @@ describe Sampler::Middleware, type: :request do
     it 'should contain request body that differs from payload[:request] one' do
       expect(payload[:request_body]).not_to eq(payload[:request].body.read)
     end
+    it { should have_key(:response) }
+    it 'should contain ActionDispatch::Response as response' do
+      expect(payload[:response]).to be_a(ActionDispatch::Response)
+    end
+    it { should have_key(:response_body) }
   end
 
   context 'when Rack app works ok' do
-    before { post '/index?x=1', key: :value }
+    before do
+      post '/index?x=1', key: :value
+      payload[:response].body = 'fake'
+    end
     include_examples 'common notification payload'
+
+    it 'should contain the same request body as response' do
+      expect(payload[:response_body]).to eq(last_response.body)
+    end
+    it 'should contain request body that differs from payload[:response] one' do
+      expect(payload[:response_body]).not_to eq(payload[:response].body)
+    end
   end
 
   context 'when Rack app raises' do
@@ -92,6 +107,10 @@ describe Sampler::Middleware, type: :request do
 
     it 'should reraise exception' do
       expect { get '/' }.to raise_error(ArgumentError).with_message('message')
+    end
+
+    it 'should contain empty request body' do
+      expect(payload[:response_body]).to eq('')
     end
   end
 end
