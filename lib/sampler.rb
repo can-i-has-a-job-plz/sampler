@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'sampler/version'
+require 'sampler/railtie' if defined?(Rails)
 
 # Just a namespace for all Sampler code
 module Sampler
