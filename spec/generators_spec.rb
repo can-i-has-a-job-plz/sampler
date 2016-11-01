@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 describe Sampler::Generators::InstallGenerator, type: :generator do
-  let(:generate_count) { 1 }
+  let(:generate_count) { 2 }
   before { allow(generator).to receive(:run_ruby_script).with(any_args) }
 
   context 'when no arguments are passed' do
     include_examples 'should run generator', 'sample_model', 'Sample'
+    include_examples 'should run generator', 'initializer', 'Sample'
   end
 
   context 'when one argument is passed' do
     let(:args) { ['model_name'] }
     include_examples 'should run generator', 'sample_model', 'model_name'
+    include_examples 'should run generator', 'initializer', 'model_name'
   end
 
   it 'should not run other generators' do
@@ -42,6 +44,38 @@ describe Sampler::Generators::SampleModelGenerator, type: :generator do
     context 'when ORM is ActiveRecord' do
       let(:options) { { orm: :active_record } }
       include_examples 'should generate a model'
+    end
+  end
+end
+
+describe Sampler::Generators::InitializerGenerator, type: :generator do
+  let(:template) { File.join(described_class.source_root, 'initializer.rb') }
+  let(:target_path) do
+    Rails.root.join('config', 'initializers', 'sampler.rb').to_path
+  end
+
+  it 'should create Sampler initializer' do
+    expect(File).to receive(:open).with(target_path, 'wb')
+    generate!
+  end
+
+  context 'initializer' do
+    before { generate! }
+    subject(:initalizer) { File.read(target_path) }
+    it 'should contain Sampler.configure block' do
+      should match(/\ASampler.configure do |config|$/)
+      should match(/^end\n\z/)
+    end
+    context 'if no arguments are passed' do
+      it 'should use Sample as probe_class' do
+        should match(/^  config.probe_class = Sample$/)
+      end
+    end
+    context 'if argument is passed' do
+      let(:args) { ['model_name'] }
+      it 'should use passed model name as probe_class' do
+        should match(/^  config.probe_class = ModelName$/)
+      end
     end
   end
 end
