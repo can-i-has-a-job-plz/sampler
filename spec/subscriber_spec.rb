@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 describe Sampler::Subscriber, subscriber: true do
-  subject!(:subscriber) { described_class.new }
+  before do |example|
+    next if example.metadata[:nil_probe_class]
+    Sampler.configuration.probe_class = Class.new(NilClass)
+  end
+  subject(:subscriber) { described_class.new }
 
   context '::new' do
     it { should_not be_subscribed }

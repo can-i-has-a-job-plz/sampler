@@ -35,6 +35,11 @@ describe Sampler::Configuration do
         let(:probe_orm) { :active_record }
         include_examples 'supported ORM'
       end
+      context 'when probe_class is NilClass subclass' do
+        let(:superklass) { NilClass }
+        let(:probe_orm) { :nil_record }
+        include_examples 'supported ORM'
+      end
       context 'when ORM of probe_class cannot be determined' do
         let(:klass) { Class.new(Object) }
         include_examples 'unsupported ORM'

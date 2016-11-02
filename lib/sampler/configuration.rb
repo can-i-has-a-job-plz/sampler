@@ -33,9 +33,11 @@ module Sampler
     private
 
     def orm_for_class(klass)
+      if klass < ActiveRecord::Base then :active_record
+      elsif klass < NilClass then :nil_record
       # TODO: suggest to file an issue
-      raise ArgumentError, 'Unsupported ORM' unless klass < ActiveRecord::Base
-      :active_record
+      else raise ArgumentError, 'Unsupported ORM'
+      end
     end
   end
 end
