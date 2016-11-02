@@ -1,18 +1,23 @@
 # frozen_string_literal: true
 describe Sampler, subscriber: true do
   subject { Sampler }
+  before do |example|
+    next if example.metadata[:do_not_init]
+    Sampler.configuration.probe_class = Class.new(ActiveRecord::Base)
+  end
+
   it 'has a version number' do
     expect(Sampler::VERSION).not_to be nil
   end
 
-  context '.configuration' do
+  context '.configuration', do_not_init: true do
     subject(:configuration) { Sampler.configuration }
     it 'should be Sampler::Configuration instance' do
       should be_a(Sampler::Configuration)
     end
   end
 
-  context '.configure' do
+  context '.configure', do_not_init: true do
     subject(:configuration) { Sampler.configuration }
     it 'should invoke the block and yield configuration' do
       should receive(:attribute)
