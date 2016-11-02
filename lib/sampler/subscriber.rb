@@ -24,6 +24,21 @@ module Sampler
     private
 
     def event_handler
+      # TODO: more meaningful error here
+      raise ArgumentError if Sampler.configuration.probe_class.nil?
+      save_method = method("save_to_#{Sampler.configuration.probe_orm}")
+      lambda do |*args|
+        event = Event.new(*args)
+        return unless event.whitelisted?
+        return if event.blacklisted?
+        save_method.call(event)
+      end
+    end
+
+    def save_to_nil_record(_event)
+    end
+
+    def save_to_active_record(_event)
     end
   end
 end
