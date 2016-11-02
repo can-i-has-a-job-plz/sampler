@@ -19,6 +19,8 @@ class TestDummyApp < Thor # :nodoc:
       run_with_clean_env 'bundle install'
       run_with_clean_env 'bundle exec rails g sampler:install'
       run_with_clean_env 'bundle exec rake db:drop db:create db:migrate'
+      create_controller
+      create_routes
     end
     install_rspec
   end
@@ -51,6 +53,7 @@ class TestDummyApp < Thor # :nodoc:
     EOF
   end
 
+  # rubocop:disable Metrics/MethodLength
   def configure_rspec
     gsub_file '.rspec', 'spec_helper', 'rails_helper'
     append_to_file 'spec/rails_helper.rb', <<~EOF
@@ -61,9 +64,37 @@ class TestDummyApp < Thor # :nodoc:
         end
       end
     EOF
+    inject_into_file 'spec/rails_helper.rb', after: /RSpec.configure.*\n/ do
+      <<~EOF
+        config.before do
+          Sampler.configuration.whitelist.clear
+          Sampler.configuration.tags.clear
+        end
+      EOF
+    end
   end
+  # rubocop:enable Metrics/MethodLength
 
   def copy_specs
     directory('rails_spec', File.join(DUMMY_DIR, 'spec'), force: true)
+  end
+
+  def create_controller
+    run_with_clean_env 'bundle exec rails g controller whatever ' \
+                       '--no-test-framework'
+    file_name = 'app/controllers/whatever_controller.rb'
+    inject_into_class file_name, 'WhateverController', <<~EOF
+      def index
+        render plain: "whatever_\#{params[:reply]}"
+      end
+    EOF
+  end
+
+  def create_routes
+    insert_into_file 'config/routes.rb', before: /^end$/ do
+      %i(get post patch put delete).map do |m|
+        "  #{m} '/*whatever', to: 'whatever#index'\n"
+      end.join
+    end
   end
 end

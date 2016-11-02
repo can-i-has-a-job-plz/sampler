@@ -35,7 +35,13 @@ module Sampler
       end
     end
 
-    def save_to_active_record(_event)
+    def save_to_active_record(event)
+      Sampler.configuration.probe_class.create!(
+        endpoint: event.endpoint, url: event.url, method: event.method,
+        params: event.params, request_body: event.request_body,
+        response_body: event.response_body, tags: event.tags,
+        created_at: event.time, updated_at: event.end
+      )
     end
   end
 end
