@@ -69,7 +69,7 @@ describe Sampler::Generators::InitializerGenerator, type: :generator do
       should match(/^end$/)
     end
     it 'should start Sampler' do
-      should match(/^Sampler.start$/)
+      should match(/^Sampler.start\s#.*/)
     end
     context 'if no arguments are passed' do
       it 'should use Sample as probe_class' do

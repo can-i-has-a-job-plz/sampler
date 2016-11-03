@@ -20,4 +20,3 @@ before_script:
 env:
   matrix:
     - "RAILS_VERSION=5.0.0"
-    - "RAILS_VERSION=4.2.0"
