@@ -10,7 +10,7 @@ module Sampler
   #     end
   class Configuration
     attr_reader :probe_class, :probe_orm, :whitelist, :blacklist, :tags,
-                :max_probes_per_hour
+                :max_probes_per_hour, :max_probes_per_endpoint
 
     def initialize
       @whitelist = FilterSet.new
@@ -34,6 +34,13 @@ module Sampler
     def max_probes_per_hour=(n)
       if n.nil? || (n.is_a?(Integer) && n.positive?)
         return @max_probes_per_hour = n
+      end
+      raise ArgumentError, 'We need positive integer here'
+    end
+
+    def max_probes_per_endpoint=(n)
+      if n.nil? || (n.is_a?(Integer) && n.positive?)
+        return @max_probes_per_endpoint = n
       end
       raise ArgumentError, 'We need positive integer here'
     end
