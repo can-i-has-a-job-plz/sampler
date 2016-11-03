@@ -81,4 +81,41 @@ describe Sampler::Configuration do
       end
     end
   end
+
+  context '#max_probes_per hour' do
+    it { should respond_to(:max_probes_per_hour) }
+    it 'should be nil after initialization' do
+      expect(subject.max_probes_per_hour).to be_nil
+    end
+  end
+
+  context '#max_probes_per_hour=' do
+    it { should respond_to(:max_probes_per_hour=) }
+    context 'with value' do
+      let(:error_message) { 'We need positive integer here' }
+      subject(:set) { -> { configuration.max_probes_per_hour = value } }
+      context 'when positive Integer' do
+        let(:value) { 100 }
+        it { should change(configuration, :max_probes_per_hour).to(value) }
+      end
+      context 'when zero' do
+        let(:value) { 0 }
+        it { should raise_error(ArgumentError).with_message(error_message) }
+      end
+      context 'when negative Integer' do
+        let(:value) { -1 }
+        it { should raise_error(ArgumentError).with_message(error_message) }
+      end
+      context 'when nil' do
+        before { configuration.max_probes_per_hour = 1 }
+        let(:value) { nil }
+        it { should change(configuration, :max_probes_per_hour).to(value) }
+      end
+      context 'when not Integer' do
+        let(:value) { Object.new }
+        let(:message) { 'We need integer here' }
+        it { should raise_error(ArgumentError).with_message(message) }
+      end
+    end
+  end
 end

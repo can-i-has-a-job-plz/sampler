@@ -9,7 +9,8 @@ module Sampler
   #       config.tag_with 'slow', ->(event) { event.duration > 200 }
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm, :whitelist, :blacklist, :tags
+    attr_reader :probe_class, :probe_orm, :whitelist, :blacklist, :tags,
+                :max_probes_per_hour
 
     def initialize
       @whitelist = FilterSet.new
@@ -28,6 +29,13 @@ module Sampler
       # TODO: check if it's really a Class (not Module etc)?
       @probe_orm = orm_for_class(klass)
       @probe_class = klass
+    end
+
+    def max_probes_per_hour=(n)
+      if n.nil? || (n.is_a?(Integer) && n.positive?)
+        return @max_probes_per_hour = n
+      end
+      raise ArgumentError, 'We need positive integer here'
     end
 
     private
