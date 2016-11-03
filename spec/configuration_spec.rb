@@ -153,4 +153,40 @@ describe Sampler::Configuration do
       end
     end
   end
+
+  context '#retention_period' do
+    it { should respond_to(:retention_period) }
+    it 'should be nil after initialization' do
+      expect(subject.retention_period).to be_nil
+    end
+  end
+
+  context '#retention_period=' do
+    it { should respond_to(:retention_period=) }
+    context 'with value' do
+      let(:error_message) { 'We need positive integer here' }
+      subject(:set) { -> { configuration.retention_period = value } }
+      context 'when positive Integer' do
+        let(:value) { 100 }
+        it { should change(configuration, :retention_period).to(value) }
+      end
+      context 'when zero' do
+        let(:value) { 0 }
+        it { should raise_error(ArgumentError).with_message(error_message) }
+      end
+      context 'when negative Integer' do
+        let(:value) { -1 }
+        it { should raise_error(ArgumentError).with_message(error_message) }
+      end
+      context 'when nil' do
+        before { configuration.retention_period = 1 }
+        let(:value) { nil }
+        it { should change(configuration, :retention_period).to(value) }
+      end
+      context 'when not Integer' do
+        let(:value) { Object.new }
+        it { should raise_error(ArgumentError).with_message(error_message) }
+      end
+    end
+  end
 end

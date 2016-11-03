@@ -41,6 +41,7 @@ module Sampler
     def save_to_active_record(event)
       delete_from_ar_max_per_hour
       delete_from_ar_max_per_endpoint(event.endpoint)
+      delete_from_ar_old_probes
       klass.create!(
         endpoint: event.endpoint, url: event.url, method: event.method,
         params: event.params, request_body: event.request_body,
@@ -69,6 +70,13 @@ module Sampler
       our_endpoint = klass.order(created_at: :desc)
                           .where(endpoint: endpoint)
       our_endpoint.where.not(id: retain).delete_all
+    end
+
+    def delete_from_ar_old_probes
+      return if config.retention_period.nil?
+      min_time = "now() - interval '#{config.retention_period} second'"
+      klass.where(klass.arel_table[:created_at].lt(Arel.sql(min_time)))
+           .delete_all
     end
 
     def config
