@@ -50,6 +50,7 @@ module Sampler
       )
     end
 
+    # rubocop:disable Metrics/AbcSize
     def delete_from_ar_max_per_hour
       return if config.max_probes_per_hour.nil?
       retain = klass.order(created_at: :desc)
@@ -71,6 +72,7 @@ module Sampler
                           .where(endpoint: endpoint)
       our_endpoint.where.not(id: retain).delete_all
     end
+    # rubocop:enable Metrics/AbcSize
 
     def delete_from_ar_old_probes
       return if config.retention_period.nil?

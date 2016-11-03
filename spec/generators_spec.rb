@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 describe Sampler::Generators::InstallGenerator, type: :generator do
-  let(:generate_count) { 2 }
+  let(:generate_count) { 3 }
   before { allow(generator).to receive(:run_ruby_script).with(any_args) }
 
   context 'when no arguments are passed' do
@@ -64,7 +64,6 @@ describe Sampler::Generators::InitializerGenerator, type: :generator do
     subject(:initalizer) { File.read(target_path) }
     it 'should contain Sampler.configure block' do
       should match(/\ASampler.configure do |config|$/)
-      should match(/^end\n\z/)
     end
     context 'if no arguments are passed' do
       it 'should use Sample as probe_class' do

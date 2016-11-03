@@ -3,3 +3,4 @@ AllCops:
   Exclude:
     - 'vendor/**/*'
     - 'lib/generators/templates/initializer.rb'
+    - 'lib/generators/templates/controller.rb'

@@ -6,7 +6,7 @@ describe Sampler::Railtie do
 
   context 'generators' do
     let(:expected) do
-      %w(install sample_model initializer).map { |g| "sampler:#{g}" }
+      %w(install sample_model initializer controller).map { |g| "sampler:#{g}" }
     end
     subject(:current) { Rails::Generators.public_namespaces.grep(/^sampler:/) }
     it 'should register all expected generators' do
