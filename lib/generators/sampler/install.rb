@@ -2,6 +2,7 @@
 require 'rails/generators/base'
 require_relative 'sample_model'
 require_relative 'initializer'
+require_relative 'controller'
 
 module Sampler
   module Generators
@@ -14,6 +15,7 @@ module Sampler
         # TODO: `generate` smells funny, maybe we should use `invoke` here
         generate 'sampler:sample_model', model_name
         generate 'sampler:initializer', model_name
+        generate 'sampler:controller', model_name
       end
     end
   end

@@ -1,0 +1,27 @@
+<h2>Samples for endpoint <%= @endpoint %></h2>
+<%= form_for :samples, method: :get do |f| %>
+  <%= hidden_field_tag 'endpoint', @endpoint %>
+  <%= label_tag "Tags"  %>
+  <%= text_field_tag(:tags, @tags, placeholder: 'Comma separated tags') %>
+  <%= button_to "Filter samples" %>
+<% end %>
+<br>
+<%= form_for :samples do |f| %>
+<table id="samples" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Url</th>
+      <th>Method</th>
+      <th>Params</th>
+      <th>Show sample</th>
+      <th>Delete sample</th>
+      <th>Check for mass delete</th>
+      <th>Tags</th>
+  </thead>
+  <tbody>
+    <%= render @samples %>
+  </tbody>
+</table>
+<%= f.submit 'Delete samples' %>
+<% end %>

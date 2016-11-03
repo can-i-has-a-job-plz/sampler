@@ -1,0 +1,12 @@
+<tr>
+  <td><%= sample.id %></td>
+  <td><%= sample.url %></td>
+  <td><%= sample.method %></td>
+  <td><%= sample.params %></td>
+  <td><%= link_to("Sample #{sample.id}", sample) %></td>
+  <td><%= link_to("Delete Sample #{sample.id}", sample, method: :delete) %></td>
+  <%= fields_for 'samples[]', sample do |ff| %>
+    <td><%= ff.check_box(:id) %></td>
+  <% end %>
+  <td><%= sample.tags %></td>
+</tr>

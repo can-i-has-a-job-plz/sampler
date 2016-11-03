@@ -1,0 +1,16 @@
+<br>
+<table id="samples" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Count</th>
+  </thead>
+  <tbody>
+    <% @samples.each do |sample| %>
+    <tr>
+      <td><%= link_to(sample.first, samples_path(endpoint: sample.first)) %></td>
+      <td><%= sample.second %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
