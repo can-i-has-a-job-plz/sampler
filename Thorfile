@@ -17,6 +17,7 @@ class TestDummyApp < Thor # :nodoc:
     inside(DUMMY_DIR) do
       prepare_gemfile
       run_with_clean_env 'bundle install'
+      run_with_clean_env 'bundle exec rails g sampler:install'
       run_with_clean_env 'bundle exec rake db:drop db:create db:migrate'
     end
     install_rspec
@@ -45,12 +46,21 @@ class TestDummyApp < Thor # :nodoc:
   def prepare_gemfile
     append_to_file 'Gemfile', <<~EOF
       gem 'rspec-rails'
+      gem 'shoulda-matchers'
       gem 'sampler', path: '../..'
     EOF
   end
 
   def configure_rspec
     gsub_file '.rspec', 'spec_helper', 'rails_helper'
+    append_to_file 'spec/rails_helper.rb', <<~EOF
+      Shoulda::Matchers.configure do |config|
+        config.integrate do |with|
+          with.test_framework :rspec
+          with.library :rails
+        end
+      end
+    EOF
   end
 
   def copy_specs

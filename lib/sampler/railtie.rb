@@ -9,5 +9,10 @@ module Sampler
       # TODO: do we want to insert our middleware into specific place?
       app.config.middleware.use Middleware
     end
+    generators do
+      # :nocov:
+      require 'generators/sampler'
+      # :nocov:
+    end
   end
 end

@@ -6,4 +6,14 @@ describe Sampler::Railtie do
   it 'should install Sampler middleware' do
     expect(Rails.application.middleware).to include(Sampler::Middleware)
   end
+
+  context 'generators' do
+    let(:expected) { %w(install sample_model).map { |g| "sampler:#{g}" } }
+    subject(:current) do
+      Rails::Generators.subclasses.map(&:namespace).grep(/^sampler:/)
+    end
+    it 'should register all expected generators' do
+      should match_array(expected)
+    end
+  end
 end

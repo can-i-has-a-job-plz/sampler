@@ -5,6 +5,7 @@ require 'active_record'
 module Sampler
   class Application < Rails::Application # :nodoc:
     config.eager_load = false # Just to silence a warning
+    config.root = File.expand_path('../../rails_root', __FILE__)
   end
 end
 
