@@ -1,5 +1,19 @@
-sudo: false
+dist: trusty
+sudo: required
 language: ruby
 rvm:
-  - 2.3.1
+  - 2.4.0
 before_install: gem install bundler -v 1.13.6
+
+services:
+  - "postgresql"
+
+addons:
+  postgresql: "9.6"
+
+before_install:
+  - "rm -f ${BUNDLE_GEMFILE}.lock"
+  - "gem update bundler"
+
+before_script:
+  - bundle update
