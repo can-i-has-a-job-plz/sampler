@@ -2,3 +2,4 @@ AllCops:
   TargetRubyVersion: 2.3
   Exclude:
     - 'vendor/bundle/**/*'
+    - 'spec/rails_root/**/*'
