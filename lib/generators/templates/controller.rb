@@ -17,6 +17,13 @@ class SamplesController < ApplicationController # :nodoc:
     redirect_to action: :index
   end
 
+  def mass_destroy
+    for_delete = params[:samples].select { |_k, v| v[:id] == '1' }.keys
+    klass.where(id: for_delete).destroy_all
+    flash[:success] = "Samples #{for_delete} was deleted"
+    redirect_to action: :index
+  end
+
   private
 
   def klass
