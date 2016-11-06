@@ -34,5 +34,22 @@ feature 'samples/index' do
         should change { Sample.where(id: sample).count }.from(1).to(0)
       end
     end
+    context 'Mass deletion' do
+      let(:for_delete) do
+        Sample.where(endpoint: '/endpoint1').pluck(:id).values_at(0, 1)
+      end
+      subject(:action) do
+        lambda do
+          for_delete.each { |id| check("samples[#{id}][id]") }
+          click_on('Delete samples')
+        end
+      end
+      it 'should delete proper number of samples' do
+        should change(Sample, :count).by(-2)
+      end
+      it 'should delete proper samples' do
+        should change { Sample.where(id: for_delete).count }.from(2).to(0)
+      end
+    end
   end
 end

@@ -23,7 +23,11 @@ module Sampler
       end
 
       def create_routes
-        route 'resources :samples, only: [:index, :show, :destroy]'
+        route <<~EOF
+               resources :samples, only: [:index, :show, :destroy] do
+                   delete :destroy, on: :collection, to: 'samples#mass_destroy'
+                 end
+              EOF
       end
     end
   end

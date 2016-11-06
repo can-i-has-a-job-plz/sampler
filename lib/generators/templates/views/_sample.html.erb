@@ -5,4 +5,5 @@
   <td><%= sample.params %></td>
   <td><%= sample.tags %></td>
   <td><%= link_to("Delete sample", sample, method: :delete) %></td>
+  <td><%= check_box_tag("samples[#{sample.id}][id]") %></td>
 </tr>
