@@ -8,8 +8,8 @@ describe 'samples/_sample' do
   it 'has id sampleN' do
     should have_css("tr#sample#{sample.id}")
   end
-  it 'has 5 columns' do
-    should have_css('tr > td', count: 5)
+  it 'has 6 columns' do
+    should have_css('tr > td', count: 6)
   end
   it 'has link to sample page in first column' do
     node = page.find(:css, 'td:nth-child(1)')
@@ -26,5 +26,9 @@ describe 'samples/_sample' do
   end
   it 'has sample.tags in fifth column' do
     should have_css('td:nth-child(5)', text: sample.tags)
+  end
+  it 'has link to delete sample in sixth column' do
+    node = page.find(:css, 'td:nth-child(6)')
+    expect(node).to have_link('Delete sample', href: sample_path(sample))
   end
 end

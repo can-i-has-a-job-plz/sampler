@@ -10,6 +10,12 @@ class SamplesController < ApplicationController # :nodoc:
     @sample = klass.find(params[:id])
   end
 
+  def destroy
+    klass.find(params[:id]).destroy
+    flash[:success] = "Sample #{params[:id]} was deleted"
+    redirect_to action: :index
+  end
+
   private
 
   def klass
