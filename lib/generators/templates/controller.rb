@@ -4,6 +4,7 @@ class SamplesController < ApplicationController # :nodoc:
     return grouped_index unless params.key?(:endpoint)
     @endpoint = params[:endpoint]
     @samples = klass.where(endpoint: @endpoint)
+    filter_tags
   end
 
   def show
@@ -32,5 +33,12 @@ class SamplesController < ApplicationController # :nodoc:
   def grouped_index
     @samples = klass.group(:endpoint).count
     render :grouped_index
+  end
+
+  def filter_tags
+    return unless params.key?(:tags)
+    @tags = params[:tags].split(',').map(&:strip)
+    @samples = @samples.with_tags(@tags)
+    @tags = @tags.join(', ')
   end
 end
