@@ -9,7 +9,7 @@ describe Sampler::Railtie do
 
   context 'generators' do
     let(:expected) do
-      %w(install sample_model initializer).map { |g| "sampler:#{g}" }
+      %w(install sample_model initializer controller).map { |g| "sampler:#{g}" }
     end
     subject(:current) do
       Rails::Generators.subclasses.map(&:namespace).grep(/^sampler:/)
