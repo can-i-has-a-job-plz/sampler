@@ -1,4 +1,11 @@
 <h2>Samples for endpoint <%= @endpoint %>, method: <%= @method %></h2>
+<%= form_for :samples, method: :get do |f| %>
+  <%= hidden_field_tag 'endpoint', @endpoint %>
+  <%= hidden_field_tag 'method', @method %>
+  <%= label_tag :tags, "Tags"  %>
+  <%= text_field_tag(:tags, @tags, placeholder: 'Comma separated tags') %>
+  <%= f.submit "Filter samples" %>
+<% end %>
 <br>
 <%= form_for :samples, method: :delete do |f| %>
 <table id="samples" class="table table-striped">

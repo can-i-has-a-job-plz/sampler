@@ -27,8 +27,16 @@ module ActiveRecord
         self.options = options.merge(timestamps: true, migration: true)
       end
 
+      def add_scope_with_tags
+        inject_into_class model_file_name, class_name, <<~EOF
+          def self.with_tags(tags)
+            return where("tags = '{}'") if tags.empty?
+            where('tags && ARRAY[?]::varchar[]', tags)
+          end
+        EOF
+      end
+
       def add_attributes_to_model
-        model_file_name = File.join('app', 'models', "#{file_name}.rb")
         validations = %i(endpoint url method).map do |a|
           format(VALIDATION_STRING, a)
         end
@@ -37,6 +45,10 @@ module ActiveRecord
       end
 
       private
+
+      def model_file_name
+        File.join('app', 'models', "#{file_name}.rb")
+      end
 
       def attributes
         ATTRIBUTES.map do |name, opts|

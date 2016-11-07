@@ -16,6 +16,7 @@ feature 'samples/index' do
   end
   describe 'when there is endpoint in params' do
     let(:endpoint) { '/endpoint1' }
+    let(:samples) { Sample.where(endpoint: '/endpoint1') }
     let(:sample) { Sample.where(endpoint: endpoint).second }
     before { visit samples_path(endpoint: endpoint, method: :get) }
     it { should have_table('samples') }
@@ -50,6 +51,19 @@ feature 'samples/index' do
       end
       it 'should delete proper samples' do
         should change { Sample.where(id: for_delete).count }.from(2).to(0)
+      end
+    end
+    context 'Tag filtering' do
+      before do
+        samples.first.update(tags: ['tag1'])
+        samples.last.update(tags: ['tag2'])
+        fill_in(:tags, with: 'tag1, tag2')
+        click_on('Filter samples')
+      end
+      it 'should show only matching samples' do
+        should have_xpath('//tbody/tr', count: 2)
+        should have_xpath("//tbody/tr[@id='sample#{samples.first.id}']")
+        should have_xpath("//tbody/tr[@id='sample#{samples.last.id}']")
       end
     end
   end
