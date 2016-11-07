@@ -12,6 +12,32 @@ describe Sampler::Middleware, type: :request do
     get '/'
   end
 
+  context 'when delegate works abnormally' do
+    let(:response) { Rack::Response.new('Whatever') }
+    before { allow(Rack::Response).to receive(:new).and_return(response) }
+    context 'when delegate raises' do
+      let(:delegate) { ->(*) { raise } }
+      it 'should return app response' do
+        get '/'
+        expect(last_response).to eq(response)
+      end
+      it 'should be called for each event' do
+        expect(delegate).to receive(:call).exactly(3).times
+        3.times { get '/' }
+      end
+    end
+    context 'when delegate is slow' do
+      let(:delegate) { ->(*) { sleep 1 } }
+      it 'should return app response without delay' do
+        expect { Timeout.timeout(0.1) { get '/' } }.not_to raise_error
+      end
+      it 'should return app response' do
+        Timeout.timeout(0.1) { get '/' }
+        expect(last_response).to eq(response)
+      end
+    end
+  end
+
   context 'env' do
     let(:original_env) { Rack::MockRequest.env_for('some_path') }
 
