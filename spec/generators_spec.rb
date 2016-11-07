@@ -2,7 +2,7 @@
 require 'generators/sampler'
 
 describe Sampler::Generators::InstallGenerator, type: :generator do
-  let(:generate_count) { 2 }
+  let(:generate_count) { 3 }
   before { allow(generator).to receive(:run_ruby_script).with(any_args) }
 
   context 'when no arguments are passed' do
