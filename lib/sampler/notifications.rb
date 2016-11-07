@@ -8,7 +8,7 @@ module Sampler
     autoload :Fanout, 'sampler/notifications/fanout'
 
     class << self
-      attr_accessor :notifier
+      attr_accessor :notifier, :executor
 
       def publish(name, *args)
         notifier.publish(name, *args)
@@ -63,5 +63,6 @@ module Sampler
     end
 
     self.notifier = Fanout.new
+    self.executor = Concurrent::SingleThreadExecutor.new
   end
 end

@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
 
   rails_version = ENV['RAILS_VERSION'] || '5.0.0'
   spec.add_dependency 'railties', "~> #{rails_version}"
+  spec.add_dependency 'concurrent-ruby', '~> 1.0', '>= 1.0.2'
 end

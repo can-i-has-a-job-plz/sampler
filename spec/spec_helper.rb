@@ -11,5 +11,11 @@ RSpec.configure do |config|
     Sampler::Notifications.unsubscribe('request.sampler')
     Sampler.instance_variable_set(:@subscriber, nil)
     Sampler.instance_variable_set(:@configuration, nil)
+    Sampler::Notifications.executor = Concurrent::SingleThreadExecutor.new
+  end
+
+  config.after(:each) do
+    Sampler::Notifications.executor.shutdown
+    Sampler::Notifications.executor.wait_for_termination(0.01)
   end
 end

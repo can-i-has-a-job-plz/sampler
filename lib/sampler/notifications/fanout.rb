@@ -1,5 +1,6 @@
 require "mutex_m"
 require "concurrent/map"
+require 'concurrent/executor/single_thread_executor'
 
 module Sampler
   module Notifications
@@ -124,7 +125,9 @@ module Sampler
           def finish(name, id, payload)
             timestack = Thread.current[:_timestack]
             started = timestack.pop
-            @delegate.call(name, started, Time.now, id, payload)
+            Sampler::Notifications.executor.post do
+              @delegate.call(name, started, Time.now, id, payload)
+            end
           end
         end
 

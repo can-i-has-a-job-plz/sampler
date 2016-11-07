@@ -4,6 +4,10 @@ require 'rack/test'
 module RequestHelper # :nodoc:
   include Rack::Test::Methods
 
+  class << self
+    attr_accessor :args
+  end
+
   def app
     Rack::Builder.new do
       use Sampler::Middleware

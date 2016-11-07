@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 describe Sampler::Middleware, type: :request do
   let(:sampler_app) { RequestHelper::SamplerApp.new }
-  subject(:delegate) { ->(*args) { @args = args } }
+  subject(:delegate) { ->(*args) { RequestHelper.args = args } }
   before do
     allow(RequestHelper::SamplerApp).to receive(:new).and_return(sampler_app)
     Sampler::Notifications.subscribe('request.sampler', delegate)
@@ -43,7 +43,7 @@ describe Sampler::Middleware, type: :request do
   end
 
   shared_examples 'common notification payload' do
-    subject(:payload) { @args.last }
+    subject(:payload) { RequestHelper.args.last }
     before do
       # Messing with request to be sure that we have original values in payload
       payload[:request].env['PATH_INFO'] = '/fake'

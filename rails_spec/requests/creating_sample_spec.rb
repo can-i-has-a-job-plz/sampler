@@ -57,6 +57,9 @@ describe 'Creating a Sample' do
                else request_params
                end
         send(method, "/#{path}", opts)
+        Sampler::Notifications.executor.shutdown
+        Sampler::Notifications.executor.wait_for_termination(0.05)
+        Sampler::Notifications.executor = Concurrent::SingleThreadExecutor.new
       end
     end
 
