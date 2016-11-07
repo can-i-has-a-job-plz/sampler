@@ -8,7 +8,7 @@
   <tbody>
     <% @samples.each do |sample| %>
     <tr>
-      <td><%= sample.first %></td>
+      <td><%= link_to(sample.first, samples_path(endpoint: sample.first)) %></td>
       <td><%= sample.second %></td>
     </tr>
     <% end %>
