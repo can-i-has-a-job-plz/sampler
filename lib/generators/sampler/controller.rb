@@ -23,7 +23,7 @@ module Sampler
       end
 
       def create_routes
-        route 'resources :samples, only: [:index]'
+        route 'resources :samples, only: [:index, :show]'
       end
     end
   end

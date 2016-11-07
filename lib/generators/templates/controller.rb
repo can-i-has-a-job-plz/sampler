@@ -7,6 +7,10 @@ class SamplesController < ApplicationController # :nodoc:
     @samples = klass.where(endpoint: @endpoint, method: @method)
   end
 
+  def show
+    @sample = klass.find(params[:id])
+  end
+
   private
 
   def klass

@@ -1,5 +1,5 @@
 <tr id="sample<%= sample.id %>">
-  <td><%= sample.id %></td>
+  <td><%= link_to("Sample #{sample.id}", sample) %></td>
   <td><%= sample.url %></td>
   <td><%= sample.params %></td>
   <td><%= sample.tags %></td>
