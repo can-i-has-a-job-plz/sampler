@@ -138,4 +138,5 @@ describe Sampler::Configuration do
   end
 
   include_examples :positive_integer_attr, :max_probes_per_hour
+  include_examples :positive_integer_attr, :max_probes_per_endpoint
 end

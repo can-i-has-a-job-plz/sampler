@@ -37,6 +37,7 @@ module Sampler
 
     def save_to_active_record(event)
       delete_from_ar_max_per_hour
+      delete_from_ar_max_per_endpoint(event.endpoint)
       Sampler.configuration.probe_class.create!(
         endpoint: event.endpoint, url: event.url, method: event.method,
         params: event.params, request_body: event.request_body,
@@ -55,6 +56,17 @@ module Sampler
                        .where(klass.arel_table[:created_at]
                                    .gt(Arel.sql("now() - interval '1 hour'")))
       last_hour.where.not(id: retain).delete_all
+    end
+
+    def delete_from_ar_max_per_endpoint(endpoint)
+      return if config.max_probes_per_endpoint.nil?
+      retain = klass.where(endpoint: endpoint)
+                    .order(created_at: :desc)
+                    .limit(config.max_probes_per_endpoint - 1)
+                    .select(:id)
+      our_endpoint = klass.order(created_at: :desc)
+                          .where(endpoint: endpoint)
+      our_endpoint.where.not(id: retain).delete_all
     end
     # rubocop:enable Metrics/AbcSize
 

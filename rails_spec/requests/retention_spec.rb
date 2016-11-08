@@ -37,4 +37,24 @@ describe 'retention' do
       end
     end
   end
+
+  describe '#max_probes_per_endpoint' do
+    context 'when nil' do
+      before { Sampler.configuration.max_probes_per_endpoint = nil }
+      it 'should not delete any samples' do
+        should change(Sample, :count).by(1)
+      end
+    end
+    context 'when not nil' do
+      before do
+        Sampler.configuration.max_probes_per_endpoint = new_samples.count + 1
+      end
+      it 'should delete old samples and add new one' do
+        should change(Sample, :count).by(1 - old_samples.count)
+      end
+      it 'should delete proper samples' do
+        should change { Sample.where(id: old_samples.map(&:id)).count }.to(0)
+      end
+    end
+  end
 end

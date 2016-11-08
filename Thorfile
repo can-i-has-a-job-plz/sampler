@@ -75,6 +75,7 @@ class TestDummyApp < Thor # :nodoc:
           Sampler.configuration.whitelist.clear
           Sampler.configuration.tags.clear
           Sampler.configuration.max_probes_per_hour = nil
+          Sampler.configuration.max_probes_per_endpoint = nil
           Sample.delete_all
         end
       EOF
