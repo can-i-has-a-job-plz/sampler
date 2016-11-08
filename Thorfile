@@ -50,15 +50,20 @@ class TestDummyApp < Thor # :nodoc:
       gem 'factory_girl_rails', '~> 4.0'
       gem 'shoulda-matchers', '~> 3.0'
       gem 'sampler', path: '../..'
+      gem 'capybara'
     EOF
   end
 
+  # rubocop:disable Metrics/MethodLength
   def configure_rspec
     gsub_file '.rspec', 'spec_helper', 'rails_helper'
     inject_into_file 'spec/rails_helper.rb', after: /RSpec.configure.*\n/ do
       <<~EOF.each_line.map { |l| "  #{l}" }.join
         config.include FactoryGirl::Syntax::Methods
         config.before { Sampler.instance_variable_set(:@configuration, nil) }
+        config.before(type: :feature) do
+           Sampler.configuration.probe_class = Sample
+        end
       EOF
     end
     append_to_file 'spec/rails_helper.rb', <<~EOF
@@ -68,8 +73,10 @@ class TestDummyApp < Thor # :nodoc:
           with.library :rails
         end
       end
+      require 'capybara/rspec'
     EOF
   end
+  # rubocop:enable Metrics/MethodLength
 
   def copy_specs
     directory('spec/rails_spec', File.join(DUMMY_DIR, 'spec'), force: true)

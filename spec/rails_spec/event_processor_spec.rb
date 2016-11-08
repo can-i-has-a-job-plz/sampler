@@ -186,7 +186,8 @@ describe Sampler::EventProcessor, type: :request do
           end
           it 'should remove proper samples' do
             action.call
-            expect(Sample.where(endpoint: endpoint)).to eq(expected_samples)
+            expect(Sample.where(endpoint: endpoint))
+              .to match_array(expected_samples)
           end
         end
       end

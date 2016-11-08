@@ -19,7 +19,7 @@ module Sampler
       end
 
       def copy_views
-        empty_directory File.join('app', 'views', file_name)
+        directory 'views', File.join('app', 'views', file_name)
       end
 
       def create_routes
