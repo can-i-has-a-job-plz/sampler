@@ -13,6 +13,18 @@ module Sampler
   class Configuration
     attr_reader :probe_class, :probe_orm, :whitelist, :blacklist, :tags
 
+    def self.positive_integer_attr(name)
+      attr_reader name
+      define_method("#{name}=") do |n|
+        if n.nil? || (n.is_a?(Integer) && n.positive?)
+          return instance_variable_set("@#{name}", n)
+        end
+        raise ArgumentError, "#{name} should be positive integer"
+      end
+    end
+
+    positive_integer_attr :max_probes_per_hour
+
     def initialize
       @whitelist = FilterSet.new
       @blacklist = FilterSet.new

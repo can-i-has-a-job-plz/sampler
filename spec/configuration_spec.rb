@@ -98,4 +98,44 @@ describe Sampler::Configuration do
       it { expect(action).not_to raise_error }
     end
   end
+
+  shared_examples :positive_integer_attr do |name|
+    context "##{name}" do
+      it { should respond_to(name) }
+      it 'should be nil after initialization' do
+        expect(subject.send(name)).to be_nil
+      end
+    end
+
+    context "##{name}=" do
+      it { should respond_to("#{name}=") }
+      context 'with value' do
+        let(:error_message) { "#{name} should be positive integer" }
+        subject(:set) { -> { configuration.send("#{name}=", value) } }
+        context 'when positive Integer' do
+          let(:value) { 100 }
+          it { should change(configuration, name).to(value) }
+        end
+        context 'when nil' do
+          before { configuration.send("#{name}=", 1) }
+          let(:value) { nil }
+          it { should change(configuration, name).to(value) }
+        end
+        context 'when zero' do
+          let(:value) { 0 }
+          it { should raise_error(ArgumentError).with_message(error_message) }
+        end
+        context 'when negative Integer' do
+          let(:value) { -1 }
+          it { should raise_error(ArgumentError).with_message(error_message) }
+        end
+        context 'when non-Integer' do
+          let(:value) { [] }
+          it { should raise_error(ArgumentError).with_message(error_message) }
+        end
+      end
+    end
+  end
+
+  include_examples :positive_integer_attr, :max_probes_per_hour
 end

@@ -74,9 +74,12 @@ class TestDummyApp < Thor # :nodoc:
         config.before do
           Sampler.configuration.whitelist.clear
           Sampler.configuration.tags.clear
+          Sampler.configuration.max_probes_per_hour = nil
+          Sample.delete_all
         end
       EOF
     end
+    gsub_file 'spec/rails_helper.rb', /.*use_transactional_fixtures/, '# \1'
   end
   # rubocop:enable Metrics/MethodLength
 
