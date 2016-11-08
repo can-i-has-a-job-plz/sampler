@@ -57,4 +57,26 @@ describe 'retention' do
       end
     end
   end
+
+  describe '#retention_period' do
+    let!(:old_samples) do
+      create_list(:sample, 3, created_at: Time.at(1).utc,
+                              updated_at: Time.now.utc)
+    end
+    context 'when nil' do
+      before { Sampler.configuration.retention_period = nil }
+      it 'should not delete any samples' do
+        should change(Sample, :count).by(1)
+      end
+    end
+    context 'when not nil' do
+      before { Sampler.configuration.retention_period = 3600 }
+      it 'should delete old samples and add new one' do
+        should change(Sample, :count).by(1 - old_samples.count)
+      end
+      it 'should delete proper samples' do
+        should change { Sample.where(id: old_samples.map(&:id)).count }.to(0)
+      end
+    end
+  end
 end

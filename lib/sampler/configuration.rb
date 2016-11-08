@@ -25,6 +25,7 @@ module Sampler
 
     positive_integer_attr :max_probes_per_hour
     positive_integer_attr :max_probes_per_endpoint
+    positive_integer_attr :retention_period
 
     def initialize
       @whitelist = FilterSet.new
