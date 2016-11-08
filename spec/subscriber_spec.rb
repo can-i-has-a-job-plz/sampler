@@ -13,7 +13,7 @@ describe Sampler::Subscriber, subscriber: true do
   context 'subscription' do
     let(:delegator) { ->(*) {} }
     let(:subscriber) { Sampler::Subscriber.new }
-    subject(:notifier) { ActiveSupport::Notifications }
+    subject(:notifier) { Sampler::Notifications }
     before do
       allow(subscriber).to receive(:event_handler).and_return(delegator)
     end
@@ -77,7 +77,7 @@ describe Sampler::Subscriber, subscriber: true do
         # Looks fugly with any line breaks
         it 'should receive arguments from notification', args_check: true do
           expect(Sampler::Event).to receive(:new).once.with('request.sampler', *args).and_return(event)
-          ActiveSupport::Notifications.notifier.publish('request.sampler', *args)
+          Sampler::Notifications.notifier.publish('request.sampler', *args)
         end
         # rubocop:enable Metrics/LineLength
       end

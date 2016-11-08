@@ -9,6 +9,7 @@ module Sampler
   autoload :Subscriber, 'sampler/subscriber'
   autoload :Event, 'sampler/event'
   autoload :FilterSet, 'sampler/filter_set'
+  autoload :Notifications, 'sampler/notifications'
 
   class << self
     attr_reader :subscriber

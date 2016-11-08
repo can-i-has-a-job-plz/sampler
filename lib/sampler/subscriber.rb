@@ -7,18 +7,18 @@ module Sampler
     def subscribe
       return true if subscribed?
       args = ['request.sampler', event_handler]
-      @subscription = ActiveSupport::Notifications.subscribe(*args)
+      @subscription = Sampler::Notifications.subscribe(*args)
       true # Don't leak subscription here
     end
 
     def unsubscribe
-      ActiveSupport::Notifications.unsubscribe(@subscription)
+      Sampler::Notifications.unsubscribe(@subscription)
     end
 
     def subscribed?
-      ActiveSupport::Notifications.notifier
-                                  .listeners_for('request.sampler')
-                                  .include?(@subscription)
+      Sampler::Notifications.notifier
+                            .listeners_for('request.sampler')
+                            .include?(@subscription)
     end
 
     private

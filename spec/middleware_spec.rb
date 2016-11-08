@@ -4,7 +4,7 @@ describe Sampler::Middleware, type: :request do
   subject(:delegate) { ->(*args) { @args = args } }
   before do
     allow(RequestHelper::SamplerApp).to receive(:new).and_return(sampler_app)
-    ActiveSupport::Notifications.subscribe('request.sampler', delegate)
+    Sampler::Notifications.subscribe('request.sampler', delegate)
   end
 
   it 'should send request.sampler notifications' do

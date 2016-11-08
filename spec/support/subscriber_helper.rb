@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module SubscriberHelper # :nodoc:
   def listeners
-    lf = ActiveSupport::Notifications.notifier.listeners_for('request.sampler')
+    lf = Sampler::Notifications.notifier.listeners_for('request.sampler')
     # Select only unicast listeners, we don't want to have multicast subscribers
     #    created with `.subscribe(nil, &block)` to be returned here
     lf

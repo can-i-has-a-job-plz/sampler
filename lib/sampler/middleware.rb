@@ -27,7 +27,7 @@ module Sampler
     private
 
     def instrumenter
-      ActiveSupport::Notifications.instrumenter
+      Sampler::Notifications.instrumenter
     end
 
     def payload_from_request(env)

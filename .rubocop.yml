@@ -4,6 +4,9 @@ AllCops:
     - 'vendor/bundle/**/*'
     - 'spec/rails_root/**/*'
     - 'lib/generators/templates/initializer.rb'
+    - 'lib/sampler/notifications.rb'
+    - 'lib/sampler/notifications/instrumenter.rb'
+    - 'lib/sampler/notifications/fanout.rb'
 Metrics/BlockLength:
   Exclude:
     - 'rails_spec/**/*.rb'
