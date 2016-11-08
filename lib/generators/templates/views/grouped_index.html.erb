@@ -1,0 +1,16 @@
+<br>
+<table id="grouped_samples">
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Count</th>
+  </thead>
+  <tbody>
+    <% @samples.each do |sample| %>
+    <tr>
+      <td><%= sample.first %></td>
+      <td><%= sample.second %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

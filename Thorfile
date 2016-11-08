@@ -50,6 +50,8 @@ class TestDummyApp < Thor # :nodoc:
       gem 'rspec-rails'
       gem 'shoulda-matchers'
       gem 'sampler', path: '../..'
+      gem 'factory_girl_rails'
+      gem 'capybara'
     EOF
   end
 
@@ -63,9 +65,12 @@ class TestDummyApp < Thor # :nodoc:
           with.library :rails
         end
       end
+      require 'capybara/rspec'
     EOF
     inject_into_file 'spec/rails_helper.rb', after: /RSpec.configure.*\n/ do
       <<~EOF
+        config.include FactoryGirl::Syntax::Methods
+
         config.before do
           Sampler.configuration.whitelist.clear
           Sampler.configuration.tags.clear
