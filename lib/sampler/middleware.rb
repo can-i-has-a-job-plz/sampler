@@ -8,12 +8,19 @@ module Sampler
       @app = app
     end
 
+    # rubocop:disable Lint/RescueException
     def call(env)
       event = event_from_request(env)
-      @app.call(env)
+      return @app.call(env) if event.nil?
+      response = @app.call(env)
+      finalize_event(event, response)
+    rescue Exception
+      event.finish = Time.now.utc
+      raise
     ensure
       events[event.endpoint] << event unless event.nil?
     end
+    # rubocop:enable Lint/RescueException
 
     private
 
@@ -38,6 +45,11 @@ module Sampler
       event
     end
     # rubocop:enable Metrics/AbcSize
+
+    def finalize_event(event, resp)
+      event.finish = Time.now.utc
+      resp
+    end
 
     def find_routes
       # TODO: check if Rails.application.reload_routes!/reload! changes router

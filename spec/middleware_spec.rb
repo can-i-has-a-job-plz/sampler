@@ -157,9 +157,11 @@ describe Sampler::Middleware, type: :request do
   shared_examples 'saved event' do
     subject(:event) { events[endpoint].last }
     let(:start) { Time.at(1.day).in_time_zone("Nuku'alofa") }
+    let(:finish) { start + 1 }
     before do
       expect(Time).to receive(:now).and_return(start).ordered
       expect(sampler_app).to receive(:call).and_call_original.ordered
+      expect(Time).to receive(:now).and_return(finish).ordered
       action.call
       # Messing with request to be sure that we have original values in event
       event.request.env['PATH_INFO'] = '/fake'
@@ -191,6 +193,12 @@ describe Sampler::Middleware, type: :request do
     end
     it 'should contain request body that differs from request one' do
       expect(event.request_body).not_to eq(event.request.body.read)
+    end
+    it 'should set proper finish time' do
+      expect(event.finish).to eq(finish)
+    end
+    it 'should set finish time in UTC' do
+      expect(event.finish.zone).to eq('UTC')
     end
   end
 
