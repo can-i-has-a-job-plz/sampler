@@ -47,4 +47,38 @@ describe Sampler::Event do
       event.tags
     end
   end
+
+  shared_examples 'should have value from attribute' do |key, attr = key|
+    it "should have :#{key}'s value equal to #{attr} attribute" do
+      expect(hash[key]).to be(subject.send(attr))
+    end
+  end
+
+  context '#to_h', focus: true do
+    let(:endpoint) { Object.new }
+    let(:expected_keys) do
+      %i(endpoint url method params request_body response_body tags created_at
+         updated_at)
+    end
+    before do
+      subject.endpoint = endpoint
+      %i(url method params request_body response_body start finish).each do |a|
+        subject[a] = Object.new
+      end
+      subject.instance_variable_set(:@tags, %w(tag1 tag2))
+    end
+    let(:hash) { subject.to_h }
+
+    it 'should have proper keys' do
+      expect(hash.keys).to match_array(expected_keys)
+    end
+    %i(url method params request_body response_body tags).each do |a|
+      include_examples 'should have value from attribute', a
+    end
+    include_examples 'should have value from attribute', :created_at, :start
+    include_examples 'should have value from attribute', :updated_at, :finish
+    it 'should have proper :endpoint value' do
+      expect(hash[:endpoint]).to eql(endpoint)
+    end
+  end
 end

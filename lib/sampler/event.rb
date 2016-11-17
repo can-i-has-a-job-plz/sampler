@@ -15,6 +15,12 @@ module Sampler
       @tags ||= Sampler.configuration.tags.keys.select { |k| tag_with?(k) }
     end
 
+    def to_h
+      { endpoint: endpoint, url: url, method: method, params: params,
+        request_body: request_body, response_body: response_body, tags: tags,
+        created_at: start, updated_at: finish }
+    end
+
     private
 
     def tag_with?(tag)
