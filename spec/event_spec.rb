@@ -8,6 +8,8 @@ describe Sampler::Event do
   it { should respond_to(:start) }
   it { should respond_to(:request_body) }
   it { should respond_to(:finish) }
+  it { should respond_to(:response) }
+  it { should respond_to(:response_body) }
 
   context '#duration' do
     let(:event) do

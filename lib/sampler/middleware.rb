@@ -14,8 +14,9 @@ module Sampler
       return @app.call(env) if event.nil?
       response = @app.call(env)
       finalize_event(event, response)
-    rescue Exception
+    rescue Exception => e
       event.finish = Time.now.utc
+      event.response = e
       raise
     ensure
       events[event.endpoint] << event unless event.nil?
@@ -48,6 +49,9 @@ module Sampler
 
     def finalize_event(event, resp)
       event.finish = Time.now.utc
+      response = ActionDispatch::Response.new(*resp)
+      event.response = response
+      event.response_body = response.body.freeze
       resp
     end
 

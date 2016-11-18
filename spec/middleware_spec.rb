@@ -170,6 +170,7 @@ describe Sampler::Middleware, type: :request do
       event.request.env['action_dispatch.request.parameters'] = {}
       # FIXME: see comment in RequestHelper
       event.request.env['rack.input'] = StringIO.new('fake')
+      event.response.body = 'fake' if event.response.respond_to?('body=')
     end
     it 'should have proper endpoint' do
       expect(event.endpoint).to eq(endpoint)
@@ -212,6 +213,18 @@ describe Sampler::Middleware, type: :request do
       include_examples 'saving events'
       context 'saved event' do
         include_examples 'saved event'
+        it 'should have ActionDispatch::Response as response' do
+          expect(event.response).to be_a(ActionDispatch::Response)
+        end
+        it 'should have the same response_body as response' do
+          expect(event.response_body).to eq(last_response.body)
+        end
+        it 'should have frozen response_body' do
+          expect(event.response_body).to be_frozen
+        end
+        it 'should have request body that differs from event.response one' do
+          expect(event.response_body).not_to eq(event.response.body)
+        end
       end
     end
 
@@ -226,6 +239,13 @@ describe Sampler::Middleware, type: :request do
       include_examples 'saving events'
       context 'saved event' do
         include_examples 'saved event'
+        it 'should have exception in response' do
+          expect(event.response).to be_a(ArgumentError)
+          expect(event.response.message).to eq('msg')
+        end
+        it 'should have nil in response_body' do
+          expect(event.response_body).to be_nil
+        end
       end
 
       it 'should reraise exception' do
