@@ -63,4 +63,14 @@ describe Sampler::Configuration do
       expect(subject.logger).to be_a(Logger)
     end
   end
+
+  context '#event_processor' do
+    it { should respond_to(:event_processor) }
+    it { should respond_to(:event_processor=) }
+    context 'after initialization' do
+      it 'shuld be Logger' do
+        expect(subject.event_processor).to be_a(Sampler::EventProcessor)
+      end
+    end
+  end
 end

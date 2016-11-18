@@ -9,3 +9,9 @@ module Sampler
 end
 
 Rails.initialize!
+
+Rails.application.routes.draw do
+  resources :authors
+  # Just to have multiple route matches
+  put '/authors/*whatever', to: 'controller#action'
+end

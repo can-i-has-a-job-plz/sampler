@@ -6,6 +6,8 @@ require 'sampler/railtie' if defined?(Rails)
 module Sampler
   autoload :Configuration, 'sampler/configuration'
   autoload :Middleware, 'sampler/middleware'
+  autoload :Event, 'sampler/event'
+  autoload :EventProcessor, 'sampler/event_processor'
 
   def self.configuration
     @configuration ||= Configuration.new

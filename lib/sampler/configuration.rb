@@ -9,10 +9,11 @@ module Sampler
   #     end
   class Configuration
     attr_reader :probe_class, :probe_orm
-    attr_accessor :logger
+    attr_accessor :logger, :event_processor
 
     def initialize
       @logger = Logger.new(nil)
+      @event_processor = EventProcessor.new
     end
 
     def probe_class=(klass)
