@@ -56,7 +56,13 @@ describe Sampler::Middleware, type: :request do
   shared_examples 'should save an event' do
     subject { action }
     let!(:event) { Sampler::Event.new }
-    before { allow(Sampler::Event).to receive(:new).and_return(event) }
+    before do
+      expect(Sampler::Event).to receive(:new) do |endpoint, request, *_args|
+        event.endpoint = endpoint
+        event.request = request
+        event
+      end
+    end
 
     include_examples 'should not modify request/response'
     context 'when queue does not exist' do
@@ -136,13 +142,61 @@ describe Sampler::Middleware, type: :request do
     include_examples 'when route resolve raised'
   end
 
+  shared_examples 'should contain frozen original' do |key, value|
+    it "should contain #{key} from orignal request" do
+      expect(event[key]).to eq(value)
+    end
+    it "should contain frozen #{key}" do
+      expect(event[key]).to be_frozen
+    end
+    it "should contain #{key} that differs from payload[:request] one" do
+      expect(event.request.send(key)).not_to eq(value)
+    end
+  end
+
+  shared_examples 'saved event' do
+    subject(:event) { events[endpoint].last }
+    let(:start) { Time.at(1.day).in_time_zone("Nuku'alofa") }
+    before do
+      expect(Time).to receive(:now).and_return(start).ordered
+      expect(sampler_app).to receive(:call).and_call_original.ordered
+      action.call
+      # Messing with request to be sure that we have original values in event
+      event.request.env['PATH_INFO'] = '/fake'
+      event.request.instance_variable_set(:@fullpath, nil)
+      event.request.instance_variable_set(:@method, 'MKCALENDAR')
+      event.request.env['action_dispatch.request.parameters'] = {}
+    end
+    it 'should have proper endpoint' do
+      expect(event.endpoint).to eq(endpoint)
+    end
+    include_examples 'should contain frozen original', :url,
+                     'http://example.org/authors/123?x=1'
+    include_examples 'should contain frozen original', :method, 'PUT'
+    include_examples 'should contain frozen original', :params, 'x' => '1',
+                                                                'k' => 'v'
+    it 'should have ActionDispatch::Request as request' do
+      expect(event.request).to be_a(ActionDispatch::Request)
+    end
+    it 'should have proper start time' do
+      expect(event.start).to eq(start)
+    end
+    it 'should have start time in UTC' do
+      expect(event.start.zone).to eq('UTC')
+    end
+  end
+
   context 'with Rack app' do
     let(:path) { '/authors/123' }
     let(:endpoint) { '/authors/:id(.:format)' }
 
     context 'that works ok' do
       let(:action) { -> { put "#{path}?x=1", k: :v } }
+
       include_examples 'saving events'
+      context 'saved event' do
+        include_examples 'saved event'
+      end
     end
 
     context 'that raises' do
@@ -154,6 +208,9 @@ describe Sampler::Middleware, type: :request do
       end
 
       include_examples 'saving events'
+      context 'saved event' do
+        include_examples 'saved event'
+      end
 
       it 'should reraise exception' do
         expect { get '/' }.to raise_error(ArgumentError).with_message('msg')

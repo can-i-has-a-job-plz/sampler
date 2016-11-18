@@ -9,11 +9,10 @@ module Sampler
     end
 
     def call(env)
-      request = ActionDispatch::Request.new(env)
-      endpoint = endpoint_for(request)
+      event = event_from_request(env)
       @app.call(env)
     ensure
-      events[endpoint] << Event.new unless endpoint.nil?
+      events[event.endpoint] << event unless event.nil?
     end
 
     private
@@ -22,12 +21,27 @@ module Sampler
       Sampler.configuration.event_processor.events
     end
 
+    def event_from_request(env)
+      request = ActionDispatch::Request.new(env.dup)
+      endpoint = endpoint_for(request)
+      return if endpoint.nil?
+      # TODO: do we want values from request or from env?
+      # TODO: is url with query string ok for us?
+      # NB! request should not be frozen since manipulations with it
+      #   (from tagging, for example) can modify it
+      Event.new(endpoint, request, request.url.freeze, request.method.freeze,
+                request.params.freeze, Time.now.utc)
+    end
+
     def find_routes
       # TODO: check if Rails.application.reload_routes!/reload! changes router
       @find_routes ||= Rails.application.routes.router.method(:find_routes)
     end
 
     def endpoint_for(request)
+      # TODO: config option to strip format?
+      # TODO: check scope, namespace, nested routes, various wildcards and
+      #   optional parts. What else?
       # Getting first route here, ignoring X-Cascade
       route = find_routes.call(request).first
       # route is an Array [match_data, path_parameters, route] if found
