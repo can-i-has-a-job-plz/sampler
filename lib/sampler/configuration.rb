@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'logger'
+
 module Sampler
   # Stores runtime Sampler configuration information.
   # @example Standard settings
@@ -7,6 +9,11 @@ module Sampler
   #     end
   class Configuration
     attr_reader :probe_class, :probe_orm
+    attr_accessor :logger
+
+    def initialize
+      @logger = Logger.new(nil)
+    end
 
     def probe_class=(klass)
       # TODO: should we initialize it to some default value?
