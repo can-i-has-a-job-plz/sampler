@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'logger'
+require 'set'
 
 module Sampler
   # Stores runtime Sampler configuration information.
@@ -8,13 +9,16 @@ module Sampler
   #       config.probe_class = Sample
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm, :running, :whitelist
+    attr_reader :probe_class, :probe_orm, :running, :whitelist, :blacklist
     attr_accessor :logger, :event_processor
 
     def initialize
       @logger = Logger.new(nil)
       @event_processor = EventProcessor.new
       @running = false
+      # TODO: we should check that blacklisted values is_a?(String), but there
+      #   will not be any issues if user will add other object, so skip for now
+      @blacklist = Set.new
     end
 
     def probe_class=(klass)

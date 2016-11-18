@@ -130,6 +130,7 @@ describe Sampler::Middleware, type: :request do
     before do
       Sampler.start
       Sampler.configuration.whitelist = //
+      Sampler.configuration.blacklist.clear
     end
     let(:path) { '/does_not_exist' }
     let(:action) { -> { put path, k: :v } }
@@ -153,18 +154,29 @@ describe Sampler::Middleware, type: :request do
         end
         context 'when event is in WL' do
           before { Sampler.configuration.whitelist = // }
-          include_examples 'should save an event'
+          context 'and not in BL' do
+            before { Sampler.configuration.blacklist.clear }
+            include_examples 'should save an event'
+          end
+          context 'and is in BL' do
+            before { Sampler.configuration.blacklist << endpoint }
+            include_examples 'should not save an event'
+          end
         end
       end
-      context 'when route resolve failed and endpoint in WL' do
-        before { Sampler.configuration.whitelist = // }
+      context 'when route resolve failed and endpoint in WL and not in BL' do
+        before do
+          Sampler.configuration.whitelist = //
+          Sampler.configuration.blacklist.clear
+        end
         include_examples 'when route resolve raised'
       end
     end
-    context 'when Sampler is not running and endpoint in WL' do
+    context 'when Sampler is not running and endpoint in WL and not in BL' do
       before do
         Sampler.stop
         Sampler.configuration.whitelist = //
+        Sampler.configuration.blacklist.clear
       end
       include_examples 'should not save an event'
     end
@@ -243,6 +255,7 @@ describe Sampler::Middleware, type: :request do
         before do
           Sampler.start
           Sampler.configuration.whitelist = //
+          Sampler.configuration.blacklist.clear
         end
         include_examples 'saved event'
         it 'should have ActionDispatch::Response as response' do
@@ -273,6 +286,7 @@ describe Sampler::Middleware, type: :request do
         before do
           Sampler.start
           Sampler.configuration.whitelist = //
+          Sampler.configuration.blacklist.clear
         end
         include_examples 'saved event'
         it 'should have exception in response' do

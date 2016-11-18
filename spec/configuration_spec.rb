@@ -169,4 +169,12 @@ describe Sampler::Configuration do
       end
     end
   end
+
+  context '#blacklist' do
+    it { should respond_to(:blacklist) }
+    it { should_not respond_to(:blacklist=) }
+    it 'should be Set after initialization' do
+      expect(subject.blacklist).to be_a(Set)
+    end
+  end
 end
