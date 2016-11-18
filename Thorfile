@@ -58,6 +58,7 @@ class TestDummyApp < Thor # :nodoc:
     inject_into_file 'spec/rails_helper.rb', after: /RSpec.configure.*\n/ do
       <<~EOF.each_line.map { |l| "  #{l}" }.join
         config.include FactoryGirl::Syntax::Methods
+        config.before { Sampler.instance_variable_set(:@configuration, nil) }
       EOF
     end
     append_to_file 'spec/rails_helper.rb', <<~EOF
