@@ -19,4 +19,26 @@ describe Sampler do
       Sampler.configure(&:attribute)
     end
   end
+
+  context '.start' do
+    it 'should call configuration.start' do
+      expect(subject.configuration).to receive(:start)
+      subject.start
+    end
+  end
+
+  context '.stop' do
+    it 'should call configuration.start' do
+      expect(subject.configuration).to receive(:stop)
+      subject.stop
+    end
+  end
+
+  context '.running?' do
+    let(:value) { Object.new }
+    it 'should return config.running' do
+      expect(subject.configuration).to receive(:running).and_return(value)
+      expect(Sampler.running?).to be(value)
+    end
+  end
 end

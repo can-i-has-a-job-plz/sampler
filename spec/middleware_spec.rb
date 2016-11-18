@@ -127,6 +127,7 @@ describe Sampler::Middleware, type: :request do
   end
 
   context 'when there is no route' do
+    before { Sampler.start }
     let(:path) { '/does_not_exist' }
     let(:action) { -> { put path, k: :v } }
     let(:endpoint) { 'not#found' }
@@ -136,10 +137,17 @@ describe Sampler::Middleware, type: :request do
   end
 
   shared_examples 'saving events' do
-    context 'when route is successfully resolved' do
-      include_examples 'should save an event'
+    context 'when Sampler is running' do
+      before { Sampler.start }
+      context 'when route is successfully resolved' do
+        include_examples 'should save an event'
+      end
+      include_examples 'when route resolve raised'
     end
-    include_examples 'when route resolve raised'
+    context 'when Sampler is not running' do
+      before { Sampler.stop }
+      include_examples 'should not save an event'
+    end
   end
 
   shared_examples 'should contain frozen original' do |key, value|
@@ -212,6 +220,7 @@ describe Sampler::Middleware, type: :request do
 
       include_examples 'saving events'
       context 'saved event' do
+        before { Sampler.start }
         include_examples 'saved event'
         it 'should have ActionDispatch::Response as response' do
           expect(event.response).to be_a(ActionDispatch::Response)
@@ -238,6 +247,7 @@ describe Sampler::Middleware, type: :request do
 
       include_examples 'saving events'
       context 'saved event' do
+        before { Sampler.start }
         include_examples 'saved event'
         it 'should have exception in response' do
           expect(event.response).to be_a(ArgumentError)

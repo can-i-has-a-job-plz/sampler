@@ -16,4 +16,16 @@ module Sampler
   def self.configure
     yield configuration
   end
+
+  def self.start
+    configuration.start
+  end
+
+  def self.stop
+    configuration.stop
+  end
+
+  def self.running?
+    configuration.running
+  end
 end

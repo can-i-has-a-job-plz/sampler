@@ -8,20 +8,20 @@ module Sampler
       @app = app
     end
 
-    # rubocop:disable Lint/RescueException
+    # rubocop:disable Lint/RescueException, Metrics/AbcSize
     def call(env)
-      event = event_from_request(env)
-      return @app.call(env) if event.nil?
+      return @app.call(env) unless Sampler.running?
+      return @app.call(env) if (event = event_from_request(env)).nil?
       response = @app.call(env)
       finalize_event(event, response)
     rescue Exception => e
-      event.finish = Time.now.utc
-      event.response = e
+      event&.finish = Time.now.utc
+      event&.response = e
       raise
     ensure
       events[event.endpoint] << event unless event.nil?
     end
-    # rubocop:enable Lint/RescueException
+    # rubocop:enable Lint/RescueException, Metrics/AbcSize
 
     private
 

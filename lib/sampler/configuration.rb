@@ -8,12 +8,13 @@ module Sampler
   #       config.probe_class = Sample
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm
+    attr_reader :probe_class, :probe_orm, :running
     attr_accessor :logger, :event_processor
 
     def initialize
       @logger = Logger.new(nil)
       @event_processor = EventProcessor.new
+      @running = false
     end
 
     def probe_class=(klass)
@@ -21,6 +22,14 @@ module Sampler
       # TODO: check if it's really a Class (not Module etc)?
       @probe_orm = orm_for_class(klass)
       @probe_class = klass
+    end
+
+    def start
+      @running = true
+    end
+
+    def stop
+      @running = false
     end
 
     private

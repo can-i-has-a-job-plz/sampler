@@ -73,4 +73,44 @@ describe Sampler::Configuration do
       end
     end
   end
+
+  context '#start' do
+    subject(:action) { -> { configuration.start } }
+    context 'when not started' do
+      before { configuration.instance_variable_set(:@running, false) }
+      it 'should set running to true' do
+        should change(configuration, :running).to(true)
+      end
+    end
+    context 'when started' do
+      before { configuration.instance_variable_set(:@running, true) }
+      it 'should not change running' do
+        should_not change(configuration, :running)
+      end
+    end
+  end
+
+  context '#stop' do
+    subject(:action) { -> { configuration.stop } }
+    context 'when started' do
+      before { configuration.instance_variable_set(:@running, true) }
+      it 'should set running to true' do
+        should change(configuration, :running).to(false)
+      end
+    end
+    context 'when not started' do
+      before { configuration.instance_variable_set(:@running, false) }
+      it 'should not change running' do
+        should_not change(configuration, :running)
+      end
+    end
+  end
+
+  context '#running' do
+    it { should respond_to(:running) }
+    it { should_not respond_to(:running=) }
+    context 'after initialization' do
+      it { expect(subject.running).to be(false) }
+    end
+  end
 end
