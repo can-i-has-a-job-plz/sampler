@@ -17,6 +17,10 @@ module RequestHelper # :nodoc:
       env['PATH_INFO'] = '/fake'
       env['REQUEST_METHOD'] = 'MKCALENDAR'
       env['QUERY_STRING'] = 'fake'
+      # FIXME: It better to do .write & .rewind, but JRuby-9.1.5.0 places
+      #    modified value to payload, so we'll replace 'rack.input' with
+      #    new StringIO. Investigate/file a bug.
+      env['rack.input'] = StringIO.new('fake')
       response
     end
 

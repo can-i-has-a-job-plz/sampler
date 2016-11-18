@@ -21,6 +21,7 @@ module Sampler
       Sampler.configuration.event_processor.events
     end
 
+    # rubocop:disable Metrics/AbcSize
     def event_from_request(env)
       request = ActionDispatch::Request.new(env.dup)
       endpoint = endpoint_for(request)
@@ -29,9 +30,14 @@ module Sampler
       # TODO: is url with query string ok for us?
       # NB! request should not be frozen since manipulations with it
       #   (from tagging, for example) can modify it
-      Event.new(endpoint, request, request.url.freeze, request.method.freeze,
-                request.params.freeze, Time.now.utc)
+      event = Event.new(endpoint, request, request.url.freeze,
+                        request.method.freeze, request.params.freeze,
+                        request.body.read)
+      request.body.rewind
+      event.start = Time.now.utc
+      event
     end
+    # rubocop:enable Metrics/AbcSize
 
     def find_routes
       # TODO: check if Rails.application.reload_routes!/reload! changes router

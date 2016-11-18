@@ -6,4 +6,5 @@ describe Sampler::Event do
   it { should respond_to(:method) }
   it { should respond_to(:params) }
   it { should respond_to(:start) }
+  it { should respond_to(:request_body) }
 end

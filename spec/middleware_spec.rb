@@ -166,6 +166,8 @@ describe Sampler::Middleware, type: :request do
       event.request.instance_variable_set(:@fullpath, nil)
       event.request.instance_variable_set(:@method, 'MKCALENDAR')
       event.request.env['action_dispatch.request.parameters'] = {}
+      # FIXME: see comment in RequestHelper
+      event.request.env['rack.input'] = StringIO.new('fake')
     end
     it 'should have proper endpoint' do
       expect(event.endpoint).to eq(endpoint)
@@ -183,6 +185,12 @@ describe Sampler::Middleware, type: :request do
     end
     it 'should have start time in UTC' do
       expect(event.start.zone).to eq('UTC')
+    end
+    it 'should contain request body from orignal request' do
+      expect(event.request_body).to eq('k=v')
+    end
+    it 'should contain request body that differs from request one' do
+      expect(event.request_body).not_to eq(event.request.body.read)
     end
   end
 
