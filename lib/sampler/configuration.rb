@@ -6,6 +6,23 @@ module Sampler
   #       config.probe_class = Sample
   #     end
   class Configuration
-    attr_accessor :probe_class
+    attr_reader :probe_class, :probe_orm
+
+    def probe_class=(klass)
+      # TODO: should we initialize it to some default value?
+      # TODO: check if it's really a Class (not Module etc)?
+      @probe_orm = orm_for_class(klass)
+      @probe_class = klass
+    end
+
+    private
+
+    def orm_for_class(klass)
+      if defined?(ActiveRecord::Base) && klass < ActiveRecord::Base
+        return :active_record
+      end
+      # TODO: suggest to file an issue
+      raise ArgumentError, 'Unsupported ORM'
+    end
   end
 end
