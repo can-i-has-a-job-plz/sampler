@@ -52,5 +52,27 @@ describe Sampler::Middleware, type: :request do
     include_examples 'should not modify response'
   end
 
-  include_examples 'should not modify request/response'
+  context 'with Rack app' do
+    let(:path) { '/authors/123' }
+
+    context 'that works ok' do
+      let(:action) { -> { put "#{path}?x=1", k: :v } }
+      include_examples 'should not modify request/response'
+    end
+
+    context 'that raises' do
+      # rubocop:disable Style/RescueModifier
+      let(:action) { -> { put "#{path}?x=1", k: :v rescue nil } }
+      # rubocop:enable Style/RescueModifier
+      before do
+        allow(sampler_app).to receive(:response).and_raise(ArgumentError, 'msg')
+      end
+
+      include_examples 'should not modify request/response'
+
+      it 'should reraise exception' do
+        expect { get '/' }.to raise_error(ArgumentError).with_message('msg')
+      end
+    end
+  end
 end
