@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'logger'
 require 'set'
+require 'active_support/hash_with_indifferent_access'
 
 module Sampler
   # Stores runtime Sampler configuration information.
@@ -9,7 +10,8 @@ module Sampler
   #       config.probe_class = Sample
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm, :running, :whitelist, :blacklist
+    attr_reader :probe_class, :probe_orm, :running, :whitelist, :blacklist,
+                :tags
     attr_accessor :logger, :event_processor
 
     def initialize
@@ -19,6 +21,20 @@ module Sampler
       # TODO: we should check that blacklisted values is_a?(String), but there
       #   will not be any issues if user will add other object, so skip for now
       @blacklist = Set.new
+      @tags = HashWithIndifferentAccess.new
+    end
+
+    def tag_with(name, filter)
+      unless name.instance_of?(String) || name.instance_of?(Symbol)
+        raise ArgumentError, 'tag name should be a String or a Symbol'
+      end
+      if filter.nil?
+        tags.delete(name)
+        nil
+      elsif filter.instance_of?(Proc) && filter.arity.equal?(1)
+        tags[name] = filter
+      else raise ArgumentError, 'tag filter should be nil or Proc with arity 1'
+      end
     end
 
     def probe_class=(klass)

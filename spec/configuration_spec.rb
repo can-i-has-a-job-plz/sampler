@@ -177,4 +177,98 @@ describe Sampler::Configuration do
       expect(subject.blacklist).to be_a(Set)
     end
   end
+
+  context '#tags' do
+    it { should respond_to(:tags) }
+    it { should_not respond_to(:tags=) }
+    context 'after initialization' do
+      it { expect(subject.tags).to be_a(HashWithIndifferentAccess) }
+      it { expect(subject.tags).to be_empty }
+    end
+  end
+
+  shared_examples 'should save a tag' do
+    it 'should update a new entry in the tags hash' do
+      expect(action).to change { subject.tags.key?('name') }.to(true)
+    end
+    it 'should save a passed Proc' do
+      expect(action).to change { subject.tags['name'] }.to(value)
+    end
+  end
+
+  shared_examples 'should not save a tag' do
+    # rubocop:disable Style/RescueModifier
+    let(:rescued_action) { -> { action.call rescue nil } }
+    # rubocop:enable Style/RescueModifier
+    context 'if tag does not exist yet' do
+      it { expect(action).to raise_error(ArgumentError).with_message(message) }
+      it 'should not save a passed value' do
+        expect(rescued_action).not_to change { subject.tags['name'] }
+      end
+    end
+  end
+
+  context '#tag_with' do
+    let(:value) { ->(_e) {} }
+    let(:action) { -> { subject.tag_with 'name', value } }
+    let(:name_message) { 'tag name should be a String or a Symbol' }
+    let(:value_message) { 'tag filter should be nil or Proc with arity 1' }
+
+    context 'when filter is a Proc with arity 1' do
+      let(:value) { ->(_e) {} }
+      include_examples 'should save a tag'
+    end
+
+    context 'when filter is nil' do
+      let(:value) {}
+      context 'if tag does not exist yet' do
+        before { subject.tags.delete('name') }
+        it 'should not create an entry in tags hash' do
+          expect(action).not_to change { subject.tags.key?('name') }
+        end
+        it 'should return nil' do
+          expect(action.call).to be_nil
+        end
+      end
+      context 'if tag already exists' do
+        before { subject.tags['name'] = -> {} }
+        it 'should delete entry for the tag' do
+          expect(action).to change { subject.tags.key?('name') }.to(false)
+        end
+        it 'should return nil' do
+          expect(action.call).to be_nil
+        end
+      end
+    end
+
+    context 'when filter is wrong' do
+      let(:message) { value_message }
+      context 'Proc with arity 0' do
+        let(:value) { -> {} }
+        include_examples 'should not save a tag'
+      end
+      context 'Proc with arity 2' do
+        let(:value) { ->(_x, _y) {} }
+        include_examples 'should not save a tag'
+      end
+      context 'not a Proc' do
+        let(:value) { 'value' }
+        include_examples 'should not save a tag'
+      end
+    end
+
+    context 'when tag name is a String' do
+      let(:action) { -> { subject.tag_with 'name', value } }
+      include_examples 'should save a tag'
+    end
+    context 'when tag name is a Symbol' do
+      let(:action) { -> { subject.tag_with :name, value } }
+      include_examples 'should save a tag'
+    end
+    context 'when tag name is not a String and is not a Symbol' do
+      let(:action) { -> { subject.tag_with Object.new, value } }
+      let(:message) { name_message }
+      include_examples 'should not save a tag'
+    end
+  end
 end
