@@ -127,7 +127,10 @@ describe Sampler::Middleware, type: :request do
   end
 
   context 'when there is no route' do
-    before { Sampler.start }
+    before do
+      Sampler.start
+      Sampler.configuration.whitelist = //
+    end
     let(:path) { '/does_not_exist' }
     let(:action) { -> { put path, k: :v } }
     let(:endpoint) { 'not#found' }
@@ -140,12 +143,29 @@ describe Sampler::Middleware, type: :request do
     context 'when Sampler is running' do
       before { Sampler.start }
       context 'when route is successfully resolved' do
-        include_examples 'should save an event'
+        context 'when WL is nil' do
+          before { Sampler.configuration.whitelist = nil }
+          include_examples 'should not save an event'
+        end
+        context 'when endpoint not in WL' do
+          before { Sampler.configuration.whitelist = /^$/ }
+          include_examples 'should not save an event'
+        end
+        context 'when event is in WL' do
+          before { Sampler.configuration.whitelist = // }
+          include_examples 'should save an event'
+        end
       end
-      include_examples 'when route resolve raised'
+      context 'when route resolve failed and endpoint in WL' do
+        before { Sampler.configuration.whitelist = // }
+        include_examples 'when route resolve raised'
+      end
     end
-    context 'when Sampler is not running' do
-      before { Sampler.stop }
+    context 'when Sampler is not running and endpoint in WL' do
+      before do
+        Sampler.stop
+        Sampler.configuration.whitelist = //
+      end
       include_examples 'should not save an event'
     end
   end
@@ -220,7 +240,10 @@ describe Sampler::Middleware, type: :request do
 
       include_examples 'saving events'
       context 'saved event' do
-        before { Sampler.start }
+        before do
+          Sampler.start
+          Sampler.configuration.whitelist = //
+        end
         include_examples 'saved event'
         it 'should have ActionDispatch::Response as response' do
           expect(event.response).to be_a(ActionDispatch::Response)
@@ -247,7 +270,10 @@ describe Sampler::Middleware, type: :request do
 
       include_examples 'saving events'
       context 'saved event' do
-        before { Sampler.start }
+        before do
+          Sampler.start
+          Sampler.configuration.whitelist = //
+        end
         include_examples 'saved event'
         it 'should have exception in response' do
           expect(event.response).to be_a(ArgumentError)

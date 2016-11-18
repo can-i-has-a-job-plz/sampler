@@ -113,4 +113,60 @@ describe Sampler::Configuration do
       it { expect(subject.running).to be(false) }
     end
   end
+
+  context '#whitelist' do
+    let(:action) { -> { subject.whitelist = value } }
+
+    it { should respond_to(:whitelist) }
+    it { should respond_to(:whitelist=) }
+    it 'should be nil after initialize' do
+      expect(subject.whitelist).to be_nil
+    end
+
+    context 'when assigning a Regexp' do
+      let(:value) { // }
+      context 'when list is nil' do
+        before { subject.whitelist = nil }
+        it 'should assign a value' do
+          expect(action).to change(subject, :whitelist).to(value)
+        end
+      end
+      context 'when list is not nil' do
+        before { subject.whitelist = /regexp/ }
+        it 'should assign a value' do
+          expect(action).to change(subject, :whitelist).to(value)
+        end
+      end
+    end
+
+    context 'when assigning a nil' do
+      let(:value) {}
+      context 'when list is nil' do
+        before { subject.whitelist = nil }
+        it { expect(action).not_to change(subject, :whitelist) }
+      end
+      context 'when list is not nil' do
+        before { subject.whitelist = /regexp/ }
+        it { expect(action).to change(subject, :whitelist).to(nil) }
+      end
+    end
+
+    context 'when assigning not nil and not a Regexp' do
+      let(:value) { 'string' }
+      let(:msg) { 'whitelist should be nil or a Regexp' }
+      # rubocop:disable Style/RescueModifier
+      let(:rescued_action) { -> { action.call rescue nil } }
+      # rubocop:enable Style/RescueModifier
+      context 'when attribute is nil' do
+        before { subject.whitelist = nil }
+        it { expect(action).to raise_error(ArgumentError).with_message(msg) }
+        it { expect(rescued_action).not_to change(subject, :whitelist) }
+      end
+      context 'when attribute is not nil' do
+        before { subject.whitelist = /regexp/ }
+        it { expect(action).to raise_error(ArgumentError).with_message(msg) }
+        it { expect(rescued_action).not_to change(subject, :whitelist) }
+      end
+    end
+  end
 end

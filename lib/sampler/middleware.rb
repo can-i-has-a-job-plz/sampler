@@ -33,7 +33,7 @@ module Sampler
     def event_from_request(env)
       request = ActionDispatch::Request.new(env.dup)
       endpoint = endpoint_for(request)
-      return if endpoint.nil?
+      return unless whitelisted?(endpoint)
       # TODO: do we want values from request or from env?
       # TODO: is url with query string ok for us?
       # NB! request should not be frozen since manipulations with it
@@ -46,6 +46,10 @@ module Sampler
       event
     end
     # rubocop:enable Metrics/AbcSize
+
+    def whitelisted?(endpoint)
+      endpoint =~ Sampler.configuration.whitelist
+    end
 
     def finalize_event(event, resp)
       event.finish = Time.now.utc
@@ -71,7 +75,6 @@ module Sampler
       route.nil? ? 'not#found' : route.last.path.spec.to_s
     rescue => e
       Sampler.configuration.logger.warn(format(RESOLVE_ERROR, e, request.url))
-      nil
     end
   end
 end

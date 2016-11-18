@@ -8,7 +8,7 @@ module Sampler
   #       config.probe_class = Sample
   #     end
   class Configuration
-    attr_reader :probe_class, :probe_orm, :running
+    attr_reader :probe_class, :probe_orm, :running, :whitelist
     attr_accessor :logger, :event_processor
 
     def initialize
@@ -30,6 +30,11 @@ module Sampler
 
     def stop
       @running = false
+    end
+
+    def whitelist=(regexp)
+      return @whitelist = regexp if regexp.nil? || regexp.instance_of?(Regexp)
+      raise ArgumentError, 'whitelist should be nil or a Regexp'
     end
 
     private
