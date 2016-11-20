@@ -18,6 +18,7 @@ class TestDummyApp < Thor # :nodoc:
       prepare_gemfile
       run_with_clean_env 'bundle install'
       create_resource('author')
+      run_with_clean_env 'bundle exec rails g sampler:install'
       run_with_clean_env 'bundle exec rake db:drop db:create db:migrate'
     end
     install_rspec
@@ -47,6 +48,7 @@ class TestDummyApp < Thor # :nodoc:
     append_to_file 'Gemfile', <<~EOF
       gem 'rspec-rails', '~> 3.0'
       gem 'factory_girl_rails', '~> 4.0'
+      gem 'shoulda-matchers', '~> 3.0'
       gem 'sampler', path: '../..'
     EOF
   end
@@ -58,6 +60,14 @@ class TestDummyApp < Thor # :nodoc:
         config.include FactoryGirl::Syntax::Methods
       EOF
     end
+    append_to_file 'spec/rails_helper.rb', <<~EOF
+      Shoulda::Matchers.configure do |config|
+        config.integrate do |with|
+          with.test_framework :rspec
+          with.library :rails
+        end
+      end
+    EOF
   end
 
   def copy_specs
