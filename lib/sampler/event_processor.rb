@@ -3,14 +3,18 @@ require 'concurrent/map'
 
 module Sampler
   class EventProcessor # :nodoc:
-    attr_reader :events
-
     def initialize
       @events = Concurrent::Map.new { |m, k| m[k] = Concurrent::Array.new }
       @to_be_saved = Hash.new { |h, k| h[k] = [] }
+      @events_lock = Concurrent::ReadWriteLock.new
+    end
+
+    def events
+      @events_lock.with_read_lock { @events }
     end
 
     def process
+      clean_empty_queues
       fill_events
       save_events
     end
@@ -20,6 +24,12 @@ module Sampler
     def fill_events
       events.each_pair do |endpoint, event_queue|
         @to_be_saved[endpoint].concat(event_queue.shift(event_queue.size))
+      end
+    end
+
+    def clean_empty_queues
+      @events_lock.with_write_lock do
+        @events.each_pair { |k, v| @events.delete(k) if v.empty? }
       end
     end
 

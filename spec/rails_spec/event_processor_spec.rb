@@ -22,6 +22,7 @@ describe Sampler::EventProcessor, type: :request do
     let(:probe_count) { 3 }
     let(:logger) { Sampler.configuration.logger }
     let(:events) { event_processor.events }
+    let(:events_lock) { event_processor.instance_variable_get(:@events_lock) }
     let(:base_events) { events[endpoint].dup }
     before do
       allow(described_class).to receive(:new).and_return(event_processor)
@@ -132,6 +133,26 @@ describe Sampler::EventProcessor, type: :request do
         expected_events.concat(events[endpoint].dup)
       end
       include_examples 'should correctly save all events'
+    end
+
+    context 'when there is empty queue' do
+      before { events[:empty] = [] }
+      it 'should delete it' do
+        should change(events, :keys).to([endpoint])
+      end
+    end
+
+    it 'should delete empty queues holding write lock' do
+      expect(events_lock).to receive(:acquire_write_lock).ordered
+      expect(events[endpoint]).to receive(:empty?).ordered
+      expect(events_lock).to receive(:release_write_lock).ordered
+      subject.call
+    end
+    it 'should release lock before processing non-empty queues' do
+      expect(events_lock).to receive(:acquire_write_lock).ordered
+      expect(events_lock).to receive(:release_write_lock).ordered
+      expect(event_processor).to receive(:fill_events).ordered
+      subject.call
     end
   end
 end

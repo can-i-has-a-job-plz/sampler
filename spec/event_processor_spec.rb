@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 describe Sampler::EventProcessor do
+  let(:event_processor) { described_class.new }
   context '#events' do
-    subject(:events) { described_class.new.events }
+    subject(:events) { event_processor.events }
+    let(:events_lock) { event_processor.instance_variable_get(:@events_lock) }
+
     it 'should be a Concurrent::Map' do
       should be_a(Concurrent::Map)
     end
@@ -13,6 +16,10 @@ describe Sampler::EventProcessor do
     end
     it 'should have Concurrent::Array assigned to the key, not just returned' do
       expect { events[:whatever] << 0 }.to change { events[:whatever] }.to([0])
+    end
+    it 'should take read lock' do
+      expect(events_lock).to receive(:acquire_read_lock)
+      events
     end
   end
 end
