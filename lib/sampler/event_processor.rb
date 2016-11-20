@@ -43,6 +43,7 @@ module Sampler
     def cleanup
       clean_max_per_endpoint unless max_per_endpoint.nil?
       clean_max_per_hour unless max_per_hour.nil?
+      clean_retention_period unless retention_period.nil?
     end
 
     def clean_max_per_endpoint
@@ -63,12 +64,22 @@ module Sampler
     end
     # rubocop:enable Metrics/AbcSize
 
+    def clean_retention_period
+      min_time = Arel.sql("now() - interval '#{retention_period} second'")
+      probe_class.where(probe_class.arel_table[:created_at].lt(min_time))
+                 .delete_all
+    end
+
     def max_per_endpoint
       Sampler.configuration.max_probes_per_endpoint
     end
 
     def max_per_hour
       Sampler.configuration.max_probes_per_hour
+    end
+
+    def retention_period
+      Sampler.configuration.retention_period
     end
 
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength

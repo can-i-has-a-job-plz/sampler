@@ -219,6 +219,35 @@ describe Sampler::EventProcessor, type: :request do
           include_examples 'should correctly save all events'
         end
       end
+
+      context '#retention_period' do
+        let(:retention_period) { 3600 }
+        let(:expected_events) { [] }
+        before do
+          action.call
+          Sample.update(created_at: Time.now.utc - 3601)
+          probe_count.times { make_request path }
+          expected_events.concat(events[endpoint].last(probe_count).dup)
+          action.call
+        end
+        context 'when nil' do
+          before { config.retention_period = nil }
+          it 'should not delete any samples' do
+            should_not change(Sample, :count)
+          end
+        end
+        context 'when not nil' do
+          let(:old_ids) { Sample.order(:created_at).first(probe_count) }
+          before { config.retention_period = 3600 }
+          it 'should delete proper number of samples' do
+            should change(Sample, :count).by(-probe_count)
+          end
+          it 'should delete proper samples' do
+            should change { Sample.where(id: old_ids).count }.to(0)
+          end
+          include_examples 'should correctly save all events'
+        end
+      end
     end
   end
 end
