@@ -18,17 +18,18 @@ describe Sampler::EventProcessor, type: :request do
     subject(:action) { -> { event_processor.process } }
     let(:path) { '/authors/new' }
     let(:endpoint) { "#{path}(.:format)" }
-    let(:probe_class) { Sampler.configuration.probe_class }
+    let(:config) { Sampler.configuration }
+    let(:probe_class) { config.probe_class }
     let(:probe_count) { 3 }
-    let(:logger) { Sampler.configuration.logger }
+    let(:logger) { config.logger }
     let(:events) { event_processor.events }
     let(:events_lock) { event_processor.instance_variable_get(:@events_lock) }
     let(:base_events) { events[endpoint].dup }
     before do
       allow(described_class).to receive(:new).and_return(event_processor)
       Sampler.start
-      Sampler.configuration.probe_class = Sample
-      Sampler.configuration.whitelist = %r{/authors}
+      config.probe_class = Sample
+      config.whitelist = %r{/authors}
       probe_count.times { make_request path }
     end
 
@@ -153,6 +154,42 @@ describe Sampler::EventProcessor, type: :request do
       expect(events_lock).to receive(:release_write_lock).ordered
       expect(event_processor).to receive(:fill_events).ordered
       subject.call
+    end
+
+    context 'when event count in queue greater that max_probes_per_endpoint' do
+      let(:count) { probe_count - 1 }
+      let(:expected_events) { events[endpoint].last(count) }
+      before { config.max_probes_per_endpoint = count }
+      it 'should save only max_probes_per_endpoint samples' do
+        should change(Sample, :count).by(count)
+      end
+      include_examples 'should correctly save all events'
+    end
+
+    context 'retention' do
+      before { action.call }
+      context '#max_probes_per_endpoint' do
+        context 'when nil' do
+          before { config.max_probes_per_endpoint = nil }
+          it 'should not delete any samples' do
+            should_not change(Sample, :count)
+          end
+        end
+        context 'when not nil' do
+          let(:count) { probe_count - 1 }
+          let(:expected_samples) do
+            Sample.where(endpoint: endpoint).order(:created_at).last(count)
+          end
+          before { config.max_probes_per_endpoint = count }
+          it 'should retain allowed sample count' do
+            should change(Sample.where(endpoint: endpoint), :count).to(count)
+          end
+          it 'should remove proper samples' do
+            action.call
+            expect(Sample.where(endpoint: endpoint)).to eq(expected_samples)
+          end
+        end
+      end
     end
   end
 end

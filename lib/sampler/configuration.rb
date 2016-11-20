@@ -14,6 +14,18 @@ module Sampler
                 :tags
     attr_accessor :logger, :event_processor
 
+    def self.positive_integer_attr(name)
+      attr_reader name
+      define_method("#{name}=") do |n|
+        if n.nil? || (n.is_a?(Integer) && n.positive?)
+          return instance_variable_set("@#{name}", n)
+        end
+        raise ArgumentError, "#{name} should be positive integer"
+      end
+    end
+
+    positive_integer_attr :max_probes_per_endpoint
+
     def initialize
       @logger = Logger.new(nil)
       @event_processor = EventProcessor.new
