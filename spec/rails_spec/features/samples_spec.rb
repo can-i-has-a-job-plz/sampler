@@ -5,6 +5,7 @@ feature 'samples/index' do
     create_list(:sample, 3, endpoint: '/endpoint1')
     create_list(:sample, 2, endpoint: '/endpoint2')
   end
+
   describe 'when no endpoint in params' do
     before { visit samples_path }
     it { should have_table('grouped_samples') }
@@ -15,11 +16,24 @@ feature 'samples/index' do
   end
   describe 'when there is endpoint in params' do
     let(:endpoint) { '/endpoint1' }
+    let(:sample) { Sample.where(endpoint: endpoint).second }
     before { visit samples_path(endpoint: endpoint, method: :get) }
     it { should have_table('samples') }
     it 'should have proper endpoint rendered' do
       path = "//h2[text()='Samples for endpoint #{endpoint}, method: get']"
       should have_xpath(path)
+    end
+    context 'Delete sample links' do
+      let(:link) do
+        page.find_link('Delete sample', href: sample_path(sample))
+      end
+      subject(:action) { -> { link.click } }
+      it 'should delete sample' do
+        should change(Sample, :count).by(-1)
+      end
+      it 'should delete proper sample' do
+        should change { Sample.where(id: sample).count }.from(1).to(0)
+      end
     end
   end
 end
