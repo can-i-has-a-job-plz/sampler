@@ -61,6 +61,7 @@ class TestDummyApp < Thor # :nodoc:
       <<~EOF.each_line.map { |l| "  #{l}" }.join
         config.include FactoryGirl::Syntax::Methods
         config.before { Sampler.instance_variable_set(:@configuration, nil) }
+        config.after { Sampler.stop }
         config.before(type: :feature) do
            Sampler.configuration.probe_class = Sample
         end

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 require 'concurrent/map'
+require 'concurrent/timer_task'
 
 module Sampler
+  # rubocop:disable Metrics/ClassLength
   class EventProcessor # :nodoc:
     HOUR_AGO = Arel.sql("now() - interval '1 hour'").freeze
     attr_reader :events
@@ -21,6 +23,24 @@ module Sampler
       fill_events
       cleanup
       save_events
+    end
+
+    def start
+      return true if @executor&.running?
+      interval = Sampler.configuration.interval
+      @executor ||= Concurrent::TimerTask.new(execution_interval: interval,
+                                              timeout_interval: interval,
+                                              run_now: true) do
+        Sampler.configuration.event_processor.process
+      end
+      true
+    end
+
+    def stop
+      return unless @executor&.running?
+      @executor.shutdown
+      @executor.wait_for_termination(5)
+      @executor = nil
     end
 
     private
@@ -124,4 +144,5 @@ module Sampler
       Sampler.configuration.probe_class
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

@@ -62,10 +62,12 @@ module Sampler
 
     def start
       @running = true
+      @event_processor.start
     end
 
     def stop
       @running = false
+      @event_processor.stop
     end
 
     def whitelist=(regexp)

@@ -29,7 +29,8 @@ describe Sampler do
 
   context '.stop' do
     it 'should call configuration.start' do
-      expect(subject.configuration).to receive(:stop)
+      # called once in after callback, so checking if called twice
+      expect(subject.configuration).to receive(:stop).twice
       subject.stop
     end
   end

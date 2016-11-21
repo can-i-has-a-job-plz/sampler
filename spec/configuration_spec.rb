@@ -81,6 +81,10 @@ describe Sampler::Configuration do
       it 'should set running to true' do
         should change(configuration, :running).to(true)
       end
+      it 'should start event_processor' do
+        expect(configuration.event_processor).to receive(:start)
+        action.call
+      end
     end
     context 'when started' do
       before { configuration.instance_variable_set(:@running, true) }
@@ -96,6 +100,10 @@ describe Sampler::Configuration do
       before { configuration.instance_variable_set(:@running, true) }
       it 'should set running to true' do
         should change(configuration, :running).to(false)
+      end
+      it 'should stop event_processor' do
+        expect(configuration.event_processor).to receive(:stop)
+        action.call
       end
     end
     context 'when not started' do
