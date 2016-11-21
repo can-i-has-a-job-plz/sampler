@@ -33,6 +33,7 @@ module Sampler
                                               run_now: true) do
         Sampler.configuration.event_processor.process
       end
+      @executor.add_observer(ExecutorObserver.new)
       true
     end
 

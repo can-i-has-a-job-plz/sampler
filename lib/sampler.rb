@@ -8,6 +8,7 @@ module Sampler
   autoload :Middleware, 'sampler/middleware'
   autoload :Event, 'sampler/event'
   autoload :EventProcessor, 'sampler/event_processor'
+  autoload :ExecutorObserver, 'sampler/executor_observer'
 
   def self.configuration
     @configuration ||= Configuration.new

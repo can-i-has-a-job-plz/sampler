@@ -28,6 +28,10 @@ describe Sampler::EventProcessor do
   context '#start' do
     subject(:action) { -> { event_processor.start } }
     let(:fake_executor) { Concurrent::TimerTask.new {} }
+    let(:observer) { Object.new }
+    let(:observers) do
+      -> { fake_executor.send(:observers).instance_variable_get(:@observers) }
+    end
     let(:interval) { 123 }
     before { Sampler.configuration.interval = interval }
     context 'when executor is nil' do
@@ -49,6 +53,10 @@ describe Sampler::EventProcessor do
       end
       it 'should return true' do
         expect(action.call).to eq(true)
+      end
+      it 'should add observer to executor' do
+        expect(Sampler::ExecutorObserver).to receive(:new).and_return(observer)
+        should change { observers.call }.to(observer => :update)
       end
     end
     context 'when executor is not nil' do
