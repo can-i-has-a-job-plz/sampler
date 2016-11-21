@@ -6,6 +6,7 @@ module Sampler
   # rubocop:disable Metrics/ClassLength
   class EventProcessor # :nodoc:
     HOUR_AGO = Arel.sql("now() - interval '1 hour'").freeze
+    COLUMNS = Sampler::Event.new.to_h.keys.freeze
     attr_reader :events
 
     def initialize
@@ -121,20 +122,45 @@ module Sampler
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     def save_events
-      probe_class.transaction do
-        @to_be_saved.each_value do |events|
-          events.each { |e| save_event(e.to_h) }
-        end
+      values = values_from_events
+      if values.any?
+        sql = "#{insert_sql} VALUES #{Arel::Nodes::Group.new(values).to_sql}"
       end
-      @to_be_saved.clear
+      probe_class.transaction do
+        probe_class.connection.execute(sql) unless sql.nil?
+        @to_be_saved.clear
+      end
     end
 
-    def save_event(event)
-      sample = probe_class.create(event)
-      return if sample.save
-      # TODO: what info should we add here?
-      logger.warn(format('Got invalid sample: %s',
-                         sample.errors.full_messages.join(', ')))
+    def make_grouping(sample)
+      Arel::Nodes::Grouping.new(
+        COLUMNS.map do |k|
+          Arel::Nodes::Casted.new(sample[k], probe_class.arel_table[k])
+        end
+      )
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def values_from_events
+      values = []
+      @to_be_saved.each_value do |events|
+        events.map { |e| probe_class.new(e.to_h) }.each do |sample|
+          if sample.valid? then values << make_grouping(sample)
+          # TODO: what info should we add here?
+          else logger.warn(format('Got invalid sample: %s',
+                                  sample.errors.full_messages.join(', ')))
+          end
+        end
+      end
+      values
+    end
+    # rubocop:enable Metrics/AbcSize
+
+    def insert_sql
+      stmt = Arel::Nodes::InsertStatement.new
+      stmt.relation = probe_class.arel_table
+      stmt.columns = COLUMNS.map { |attr| probe_class.arel_table[attr] }
+      stmt.to_sql
     end
 
     def logger
