@@ -9,7 +9,7 @@
   <tbody>
     <% @samples.each do |sample, count| %>
       <tr>
-        <td><%= sample.first %></td>
+        <td><%= link_to(sample.first, samples_path(endpoint: sample.first, method: sample.second)) %></td>
         <td><%= sample.second %></td>
         <td><%= count %></td>
       </tr>

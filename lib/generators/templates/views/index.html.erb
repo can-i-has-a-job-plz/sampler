@@ -1,0 +1,14 @@
+<h2>Samples for endpoint <%= @endpoint %>, method: <%= @method %></h2>
+<br>
+<table id="samples" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Url</th>
+      <th>Params</th>
+      <th>Tags</th>
+  </thead>
+  <tbody>
+    <%= render @samples %>
+  </tbody>
+</table>
