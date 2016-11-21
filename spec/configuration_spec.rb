@@ -272,11 +272,11 @@ describe Sampler::Configuration do
     end
   end
 
-  shared_examples 'positive_integer_attr' do |name|
+  shared_examples 'positive_integer_attr' do |name, initial|
     context "##{name}" do
       it { should respond_to(name) }
-      it 'should be nil after initialization' do
-        expect(subject.send(name)).to be_nil
+      it "should be set to #{initial.inspect} after initialization" do
+        expect(subject.send(name)).to eq(initial)
       end
     end
 
@@ -313,4 +313,5 @@ describe Sampler::Configuration do
   include_examples 'positive_integer_attr', :max_probes_per_endpoint
   include_examples 'positive_integer_attr', :max_probes_per_hour
   include_examples 'positive_integer_attr', :retention_period
+  include_examples 'positive_integer_attr', :interval, 60
 end

@@ -12,7 +12,7 @@ module Sampler
   class Configuration
     attr_reader :probe_class, :probe_orm, :running, :whitelist, :blacklist,
                 :tags
-    attr_accessor :logger, :event_processor
+    attr_accessor :logger, :event_processor, :interval
 
     def self.positive_integer_attr(name)
       attr_reader name
@@ -27,6 +27,7 @@ module Sampler
     positive_integer_attr :max_probes_per_endpoint
     positive_integer_attr :max_probes_per_hour
     positive_integer_attr :retention_period
+    positive_integer_attr :interval
 
     def initialize
       @logger = Logger.new(nil)
@@ -36,6 +37,7 @@ module Sampler
       #   will not be any issues if user will add other object, so skip for now
       @blacklist = Set.new
       @tags = HashWithIndifferentAccess.new
+      @interval = 60
     end
 
     def tag_with(name, filter)
