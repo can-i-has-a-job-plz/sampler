@@ -190,6 +190,35 @@ describe Sampler::EventProcessor, type: :request do
           end
         end
       end
+
+      context '#max_probes_per_hour' do
+        let(:expected_events) { [] }
+        before do
+          expected_events.concat(events[endpoint].dup)
+          action.call
+          Sample.update(created_at: Time.now.utc - 3601.seconds)
+          (probe_count * 2).times { make_request path }
+          expected_events.concat(events[endpoint].last(probe_count).dup)
+          action.call
+        end
+        context 'when nil' do
+          before { config.max_probes_per_hour = nil }
+          it 'should not delete any samples' do
+            should_not change(Sample, :count)
+          end
+        end
+        context 'when not nil' do
+          let!(:old_ids) { Sample.order(:created_at).last(6).first(3) }
+          before { config.max_probes_per_hour = probe_count }
+          it 'should delete proper number of samples' do
+            should change(Sample, :count).by(-probe_count)
+          end
+          it 'should delete proper samples' do
+            should change { Sample.where(id: old_ids).count }.to(0)
+          end
+          include_examples 'should correctly save all events'
+        end
+      end
     end
   end
 end

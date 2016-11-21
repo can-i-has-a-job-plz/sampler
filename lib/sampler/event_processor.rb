@@ -3,6 +3,7 @@ require 'concurrent/map'
 
 module Sampler
   class EventProcessor # :nodoc:
+    HOUR_AGO = Arel.sql("now() - interval '1 hour'").freeze
     attr_reader :events
 
     def initialize
@@ -41,6 +42,7 @@ module Sampler
 
     def cleanup
       clean_max_per_endpoint unless max_per_endpoint.nil?
+      clean_max_per_hour unless max_per_hour.nil?
     end
 
     def clean_max_per_endpoint
@@ -51,8 +53,22 @@ module Sampler
       to_clear.each { |ep| clean_endpoint_samples(ep) }
     end
 
+    # rubocop:disable Metrics/AbcSize
+    def clean_max_per_hour
+      retain_count = max_per_hour - @to_be_saved.values.map(&:size).sum
+      retain = probe_class.order(created_at: :desc).limit(retain_count)
+      probe_class.where(probe_class.arel_table[:created_at].gt(HOUR_AGO))
+                 .where.not(id: retain.select(:id))
+                 .delete_all
+    end
+    # rubocop:enable Metrics/AbcSize
+
     def max_per_endpoint
       Sampler.configuration.max_probes_per_endpoint
+    end
+
+    def max_per_hour
+      Sampler.configuration.max_probes_per_hour
     end
 
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength

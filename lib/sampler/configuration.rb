@@ -25,6 +25,7 @@ module Sampler
     end
 
     positive_integer_attr :max_probes_per_endpoint
+    positive_integer_attr :max_probes_per_hour
 
     def initialize
       @logger = Logger.new(nil)
