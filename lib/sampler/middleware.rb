@@ -19,14 +19,14 @@ module Sampler
       event&.response = e
       raise
     ensure
-      events[event.endpoint] << event unless event.nil?
+      events << event unless event.nil?
     end
     # rubocop:enable Lint/RescueException, Metrics/AbcSize
 
     private
 
     def events
-      Sampler.configuration.event_processor.events
+      Sampler.configuration.event_processor
     end
 
     # rubocop:disable Metrics/AbcSize

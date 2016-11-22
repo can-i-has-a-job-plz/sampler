@@ -17,9 +17,11 @@ describe Sampler::EventProcessor do
     it 'should have Concurrent::Array assigned to the key, not just returned' do
       expect { events[:whatever] << 0 }.to change { events[:whatever] }.to([0])
     end
-    it 'should take read lock' do
-      expect(events_lock).to receive(:acquire_read_lock)
-      events
+    it 'should take read lock on event addition' do
+      expect(events_lock).to receive(:acquire_read_lock).ordered
+      expect(events[:whatever]).to receive(:<<).ordered
+      expect(events_lock).to receive(:release_read_lock).ordered
+      event_processor << Sampler::Event.new(:whatever)
     end
   end
 end
