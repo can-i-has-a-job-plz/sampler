@@ -9,6 +9,7 @@ module Sampler
   autoload :Event, 'sampler/event'
   autoload :EventProcessor, 'sampler/event_processor'
   autoload :ExecutorObserver, 'sampler/executor_observer'
+  autoload :RingBuffer, 'sampler/ring_buffer'
 
   def self.configuration
     @configuration ||= Configuration.new

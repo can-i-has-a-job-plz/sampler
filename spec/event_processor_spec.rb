@@ -11,17 +11,32 @@ describe Sampler::EventProcessor do
     it 'should be empty Concurrent::Map' do
       should be_empty
     end
-    it 'should have Concurrent::Array as default value' do
-      expect(events[:whatever]).to be_a(Concurrent::Array)
-    end
-    it 'should have Concurrent::Array assigned to the key, not just returned' do
-      expect { events[:whatever] << 0 }.to change { events[:whatever] }.to([0])
-    end
     it 'should take read lock on event addition' do
       expect(events_lock).to receive(:acquire_read_lock).ordered
       expect(events[:whatever]).to receive(:<<).ordered
       expect(events_lock).to receive(:release_read_lock).ordered
       event_processor << Sampler::Event.new(:whatever)
+    end
+    context 'when max_probes_per_endpoint is nil' do
+      before { Sampler.configuration.max_probes_per_endpoint = nil }
+      it 'should have Concurrent::Array as default value' do
+        expect(events[:whatever]).to be_a(Concurrent::Array)
+      end
+      it 'should have Concurrent::Array assigned to the key' do
+        expect { events[:whatever] << 0 }
+          .to change { events[:whatever] }.to([0])
+      end
+    end
+    context 'when max_probes_per_endpoint is not nil' do
+      before { Sampler.configuration.max_probes_per_endpoint = 1 }
+      it 'should have Sampler::RingBuffer as default value' do
+        expect(events[:whatever]).to be_a(Sampler::RingBuffer)
+      end
+      it 'should have Sampler::RingBuffer assigned to the key' do
+        expect { events[:whatever] << 0 }
+          .to change { events[:whatever].size }.by(1)
+        expect(events[:whatever].take).to eq(0)
+      end
     end
   end
 

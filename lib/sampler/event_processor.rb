@@ -10,7 +10,7 @@ module Sampler
     attr_reader :events
 
     def initialize
-      @events = Concurrent::Map.new { |m, k| m[k] = Concurrent::Array.new }
+      @events = Concurrent::Map.new { |m, k| m[k] = buffer }
       @to_be_saved = Hash.new { |h, k| h[k] = [] }
       @events_lock = Concurrent::ReadWriteLock.new
     end
@@ -46,6 +46,12 @@ module Sampler
     end
 
     private
+
+    def buffer
+      # TODO: we should handle max_per_endpoint changes in runtime
+      return RingBuffer.new(max_per_endpoint) if max_per_endpoint
+      Concurrent::Array.new
+    end
 
     def fill_events
       events.each_pair do |endpoint, event_queue|
