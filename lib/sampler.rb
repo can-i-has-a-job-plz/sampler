@@ -6,4 +6,5 @@ require 'sampler/railtie'
 # Just a namespace for all Sampler code
 module Sampler
   autoload :Middleware, 'sampler/middleware'
+  autoload :Event, 'sampler/event'
 end
