@@ -7,6 +7,7 @@ module RackRequestHelper # :nodoc:
 
   def app
     Rack::Builder.new do
+      use Sampler::Middleware
       run SamplerApp.new
     end.to_app
   end

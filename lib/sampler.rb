@@ -2,6 +2,7 @@
 
 require 'sampler/version'
 
-module Sampler # :nodoc:
-  # Your code goes here...
+# Just a namespace for all Sampler code
+module Sampler
+  autoload :Middleware, 'sampler/middleware'
 end
