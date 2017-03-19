@@ -49,23 +49,28 @@ describe Sampler::Middleware, type: :rack_request do
     end
   end
 
-  shared_context 'creating event' do
+  shared_context 'creating event' do |running|
     let(:event) { Sampler::Event.new(endpoint, request) }
     let(:request) { ActionDispatch::Request.new(env) }
 
     context 'Event.new' do
       before { allow(event).to receive(:finalize) }
 
-      it 'should be called once with proper arguments' do
+      it 'should be called once with proper arguments', if: running do
         expect(ActionDispatch::Request)
           .to receive(:new).with(env).once.and_return(request)
         expect(Sampler::Event)
           .to receive(:new).with(endpoint, request).once.and_return(event)
         action.call
       end
+
+      it 'should not be called', unless: running do
+        expect(Sampler::Event).not_to receive(:new)
+        action.call
+      end
     end
 
-    context 'Event#finalize' do
+    context 'Event#finalize', if: running do
       before { allow(Sampler::Event).to receive(:new).and_return(event) }
       it 'should be called on created event with proper argument' do
         expect(sampler_app).to receive(:call).and_return(response)
@@ -84,7 +89,7 @@ describe Sampler::Middleware, type: :rack_request do
         .to receive(:new).and_return(sampler_app)
     end
 
-    (0..4).each do |found|
+    (0..4).to_a.product([true, false]).each do |found, running|
       description = 'when route is '
       description += case found
                      when 0 then 'not found'
@@ -94,6 +99,7 @@ describe Sampler::Middleware, type: :rack_request do
                        'multiple found and first does not match constraint '
                      when 4 then 'found and goes to mounted app '
                      end
+      description += "and Sampler is #{'not ' unless running}running"
 
       context description do
         let(:path) do
@@ -113,14 +119,16 @@ describe Sampler::Middleware, type: :rack_request do
           when 4 then '/loop/loop/authors/:id(.:format)'
           end
         end
+        let(:env) { Rack::MockRequest.env_for(path, input: 'whatever') }
+
         before do
           allow(router).to receive(:find_routes).and_raise if found == 1
+          running ? Sampler.start : Sampler.stop
         end
-        let(:env) { Rack::MockRequest.env_for(path, input: 'whatever') }
 
         include_context 'passed env'
         include_context 'response', raises
-        include_context 'creating event'
+        include_context 'creating event', running
       end
     end
   end

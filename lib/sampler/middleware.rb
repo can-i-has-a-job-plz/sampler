@@ -11,17 +11,19 @@ module Sampler
 
     def call(env)
       event = event_from(env)
+      return @app.call(env) if event.nil?
       response = @app.call(env)
       event.finalize(response.dup)
       response
     rescue Exception => e # rubocop:disable Lint/RescueException
-      event.finalize(e)
+      event&.finalize(e)
       raise
     end
 
     private
 
     def event_from(env)
+      return unless Sampler.running?
       request = ActionDispatch::Request.new(env.dup)
       endpoint = endpoint_for(request, Rails.application, '')
       Event.new(endpoint, request)
