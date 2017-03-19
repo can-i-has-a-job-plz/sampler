@@ -12,7 +12,7 @@ module Sampler
 
   extend SingleForwardable
 
-  def_delegators :configuration, :start, :stop, :running?
+  def_delegators :configuration, :start, :stop, :running?, :sampled?
 
   module_function
 

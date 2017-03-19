@@ -89,17 +89,21 @@ describe Sampler::Middleware, type: :rack_request do
         .to receive(:new).and_return(sampler_app)
     end
 
-    (0..4).to_a.product([true, false]).each do |found, running|
+    cases = (0..4).to_a.product([true, false], [true, false])
+    cases.each do |found, running, sampled|
+      should_create = running && sampled
+
       description = 'when route is '
       description += case found
-                     when 0 then 'not found'
-                     when 1 then 'raised during resolution'
-                     when 2 then 'found'
+                     when 0 then 'not found '
+                     when 1 then 'raised during resolution '
+                     when 2 then 'found '
                      when 3
                        'multiple found and first does not match constraint '
                      when 4 then 'found and goes to mounted app '
                      end
-      description += "and Sampler is #{'not ' unless running}running"
+      description += "and Sampler is #{'not ' unless running}running "
+      description += "and #{'not ' unless sampled}sampled"
 
       context description do
         let(:path) do
@@ -124,11 +128,13 @@ describe Sampler::Middleware, type: :rack_request do
         before do
           allow(router).to receive(:find_routes).and_raise if found == 1
           running ? Sampler.start : Sampler.stop
+          allow(Sampler.configuration)
+            .to receive(:sampled?).with(anything).and_return(sampled)
         end
 
         include_context 'passed env'
         include_context 'response', raises
-        include_context 'creating event', running
+        include_context 'creating event', should_create
       end
     end
   end

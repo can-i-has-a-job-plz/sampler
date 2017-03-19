@@ -26,6 +26,7 @@ module Sampler
       return unless Sampler.running?
       request = ActionDispatch::Request.new(env.dup)
       endpoint = endpoint_for(request, Rails.application, '')
+      return unless Sampler.sampled?(endpoint)
       Event.new(endpoint, request)
     end
 
