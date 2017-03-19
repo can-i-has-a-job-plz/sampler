@@ -49,14 +49,14 @@ describe Sampler::Middleware, type: :rack_request do
     end
   end
 
-  shared_context 'creating event' do |running|
+  shared_context 'creating event' do |should_create|
     let(:event) { Sampler::Event.new(endpoint, request) }
     let(:request) { ActionDispatch::Request.new(env) }
 
     context 'Event.new' do
       before { allow(event).to receive(:finalize) }
 
-      it 'should be called once with proper arguments', if: running do
+      it 'should be called once with proper arguments', if: should_create do
         expect(ActionDispatch::Request)
           .to receive(:new).with(env).once.and_return(request)
         expect(Sampler::Event)
@@ -64,13 +64,13 @@ describe Sampler::Middleware, type: :rack_request do
         action.call
       end
 
-      it 'should not be called', unless: running do
+      it 'should not be called', unless: should_create do
         expect(Sampler::Event).not_to receive(:new)
         action.call
       end
     end
 
-    context 'Event#finalize', if: running do
+    context 'Event#finalize', if: should_create do
       before { allow(Sampler::Event).to receive(:new).and_return(event) }
       it 'should be called on created event with proper argument' do
         expect(sampler_app).to receive(:call).and_return(response)
@@ -83,6 +83,7 @@ describe Sampler::Middleware, type: :rack_request do
   shared_examples 'test all' do |raises|
     let(:sampler_app) { RackRequestHelper::SamplerApp.new }
     let(:router) { Rails.application.routes.router }
+    let(:blacklist) { Sampler.configuration.blacklist }
 
     before do
       allow(RackRequestHelper::SamplerApp)

@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
+require 'set'
+
 module Sampler
   class Configuration # :nodoc:
-    attr_reader :whitelist
+    attr_reader :whitelist, :blacklist
 
     def initialize
       @running = false
       # TODO: we should check that blacklisted values is_a?(String), but there
       #   will not be any issues if user will add other object, so skip for now
       @whitelist = /\a\Z/
+      @blacklist = Set.new
     end
 
     def whitelist=(value)
@@ -29,7 +32,7 @@ module Sampler
     end
 
     def sampled?(endpoint)
-      whitelist.match?(endpoint)
+      whitelist.match?(endpoint) && !blacklist.include?(endpoint)
     end
   end
 end

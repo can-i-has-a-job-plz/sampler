@@ -13,6 +13,12 @@ describe Sampler::Configuration do
         expect(subject.whitelist).not_to match('')
       end
     end
+    context '#blacklist' do
+      it { expect(configuration.blacklist).not_to be_nil }
+      it { expect(subject.blacklist).to respond_to(:include?) }
+      it { expect(subject.blacklist).to respond_to(:<<) }
+      it { expect(subject.blacklist).to be_empty }
+    end
   end
 
   context '#start' do
@@ -65,13 +71,18 @@ describe Sampler::Configuration do
 
   context '#sampled?' do
     let(:endpoint) { '/endpoint' }
+    let(:blacklist) { configuration.blacklist }
 
-    [true, false].each do |whitelisted|
-      description = "when endpoint #{'not ' unless whitelisted}whitelisted"
+    [true, false].product([true, false]).each do |whitelisted, blacklisted|
+      description = "when endpoint #{'not ' unless whitelisted}whitelisted "
+      description += "and #{'not ' unless blacklisted}blacklisted"
 
       context description do
-        let(:should_be_sampled) { whitelisted }
-        before { configuration.whitelist = whitelisted ? // : /\a\Z/ }
+        let(:should_be_sampled) { whitelisted && !blacklisted }
+        before do
+          configuration.whitelist = whitelisted ? // : /\a\Z/
+          blacklisted ? blacklist << endpoint : blacklist.clear
+        end
         it { expect(configuration.sampled?(endpoint)).to be(should_be_sampled) }
       end
     end
