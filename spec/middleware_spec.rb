@@ -3,13 +3,13 @@
 describe Sampler::Middleware, type: :rack_request do
   shared_context 'passed env' do
     before do
-      allow(Sampler::Event).to receive(:new).and_wrap_original do |m, req|
+      allow(Sampler::Event).to receive(:new).and_wrap_original do |m, ep, req|
         # messing with received request
         req.env['rack.input'].reopen
         req.env['rack.input'].write('fake')
         req.env['rack.input'].rewind
         req.env['rack.fake'] = 'fake'
-        m.call(req)
+        m.call(ep, req)
       end
     end
 
@@ -50,17 +50,17 @@ describe Sampler::Middleware, type: :rack_request do
   end
 
   shared_context 'creating event' do
-    let(:event) { Sampler::Event.new(request) }
+    let(:event) { Sampler::Event.new(endpoint, request) }
     let(:request) { ActionDispatch::Request.new(env) }
 
     context 'Event.new' do
       before { allow(event).to receive(:finalize) }
 
-      it 'should be called once with proper argument' do
+      it 'should be called once with proper arguments' do
         expect(ActionDispatch::Request)
           .to receive(:new).with(env).once.and_return(request)
         expect(Sampler::Event)
-          .to receive(:new).with(request).once.and_return(event)
+          .to receive(:new).with(endpoint, request).once.and_return(event)
         action.call
       end
     end
@@ -77,16 +77,52 @@ describe Sampler::Middleware, type: :rack_request do
 
   shared_examples 'test all' do |raises|
     let(:sampler_app) { RackRequestHelper::SamplerApp.new }
-    let(:env) { Rack::MockRequest.env_for('/some_path', input: 'whatever') }
+    let(:router) { Rails.application.routes.router }
 
     before do
       allow(RackRequestHelper::SamplerApp)
         .to receive(:new).and_return(sampler_app)
     end
 
-    include_context 'passed env'
-    include_context 'response', raises
-    include_context 'creating event'
+    (0..4).each do |found|
+      description = 'when route is '
+      description += case found
+                     when 0 then 'not found'
+                     when 1 then 'raised during resolution'
+                     when 2 then 'found'
+                     when 3
+                       'multiple found and first does not match constraint '
+                     when 4 then 'found and goes to mounted app '
+                     end
+
+      context description do
+        let(:path) do
+          case found
+          when 0 then '/does_not_exist'
+          when 1, 2 then '/authors/123'
+          when 3 then '/books/whatever'
+          when 4 then '/loop/loop/authors/123'
+          end
+        end
+        let(:endpoint) do
+          case found
+          when 0 then 'not#found'
+          when 1 then 'resolve#error'
+          when 2 then '/authors/:id(.:format)'
+          when 3 then '/books/*whatever(.:format)'
+          when 4 then '/loop/loop/authors/:id(.:format)'
+          end
+        end
+        before do
+          allow(router).to receive(:find_routes).and_raise if found == 1
+        end
+        let(:env) { Rack::MockRequest.env_for(path, input: 'whatever') }
+
+        include_context 'passed env'
+        include_context 'response', raises
+        include_context 'creating event'
+      end
+    end
   end
 
   context 'when app returns a response' do

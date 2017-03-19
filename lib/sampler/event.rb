@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sampler
-  Event = Struct.new(:url, :request_method, :params, :request_body,
+  Event = Struct.new(:endpoint, :url, :request_method, :params, :request_body,
                      :created_at, :response_body, :updated_at)
 
   class Event # :nodoc:
@@ -9,8 +9,8 @@ module Sampler
 
     attr_reader :request, :response
 
-    def initialize(request)
-      super(request.url.freeze, request.request_method.freeze,
+    def initialize(endpoint, request)
+      super(endpoint.freeze, request.url.freeze, request.request_method.freeze,
             request.params.freeze, request.body.read.freeze)
       request.body.rewind
       self.created_at = Time.now.utc

@@ -5,9 +5,11 @@ describe Sampler::Event do
   let(:env) do
     Rack::MockRequest.env_for('/path?x=y', method: :put, input: request_body)
   end
+  let(:endpoint) { '/some/endpoint' }
   let(:request) { ActionDispatch::Request.new(env) }
-  subject(:new_event) { described_class.new(request) }
+  subject(:new_event) { described_class.new(endpoint, request) }
 
+  it { should respond_to(:endpoint) }
   it { should respond_to(:request) }
   it { should respond_to(:url) }
   it { should respond_to(:request_method) }
@@ -33,6 +35,13 @@ describe Sampler::Event do
     subject(:event) { new_event }
 
     it { should_not be_frozen }
+
+    context '#endpoint' do
+      it 'should be equal to the passed one' do
+        expect(event.endpoint).to eql(endpoint)
+      end
+      it { expect(event.endpoint).to be_frozen }
+    end
 
     context '#request' do
       it 'should be equal to the passed one' do
@@ -130,6 +139,7 @@ describe Sampler::Event do
         end
       end
 
+      include_examples 'do not change initialized attribute', 'endpoint'
       include_examples 'do not change initialized attribute', 'request'
       include_examples 'do not change initialized attribute', 'url'
       include_examples 'do not change initialized attribute', 'request_method'
