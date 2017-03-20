@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
 describe Sampler::Middleware, type: :rack_request do
-  let(:sampler_app) { RackRequestHelper::SamplerApp.new }
-  let(:env) { Rack::MockRequest.env_for('/some_path', input: 'whatever') }
-
-  before do
-    allow(RackRequestHelper::SamplerApp)
-      .to receive(:new).and_return(sampler_app)
-  end
-
   shared_context 'passed env' do
+    before do
+      allow(Sampler::Event).to receive(:new).and_wrap_original do |m, req|
+        # messing with received request
+        req.env['rack.input'].reopen
+        req.env['rack.input'].write('fake')
+        req.env['rack.input'].rewind
+        req.env['rack.fake'] = 'fake'
+        m.call(req)
+      end
+    end
+
     it 'should not be modified' do
       expect(sampler_app).to receive(:call).with(env)
       action.call
@@ -17,6 +20,7 @@ describe Sampler::Middleware, type: :rack_request do
 
     context 'rack.input' do
       it 'should not be modified' do
+        skip 'do we really care about it?'
         action.call
         env['rack.input'].rewind
         expect(env['rack.input'].read).to eql('whatever')
@@ -25,28 +29,78 @@ describe Sampler::Middleware, type: :rack_request do
   end
 
   shared_context 'response' do |raises|
+    before unless: raises do
+      event = instance_double(Sampler::Event)
+      allow(Sampler::Event).to receive(:new).and_return(event)
+      allow(event).to receive(:finalize) do |resp|
+        # messing with received response
+        resp[0] = 502
+        resp[1] = { 'Fake' => 'Header' }
+        resp[2] = 'fake body'
+      end
+    end
+
     it 'should not be modified', unless: raises do
       expect(app.call(env)).to eql([201, { 'Header' => 'Value' }, 'whatever'])
     end
     it 'should raise original exception', if: raises do
       expect { app.call(env) }
-        .to raise_error(error.class).with_message(error.message)
+        .to raise_error(response.class).with_message(response.message)
     end
+  end
+
+  shared_context 'creating event' do
+    let(:event) { Sampler::Event.new(request) }
+    let(:request) { ActionDispatch::Request.new(env) }
+
+    context 'Event.new' do
+      before { allow(event).to receive(:finalize) }
+
+      it 'should be called once with proper argument' do
+        expect(ActionDispatch::Request)
+          .to receive(:new).with(env).once.and_return(request)
+        expect(Sampler::Event)
+          .to receive(:new).with(request).once.and_return(event)
+        action.call
+      end
+    end
+
+    context 'Event#finalize' do
+      before { allow(Sampler::Event).to receive(:new).and_return(event) }
+      it 'should be called on created event with proper argument' do
+        expect(sampler_app).to receive(:call).and_return(response)
+        expect(event).to receive(:finalize).with(response)
+        action.call
+      end
+    end
+  end
+
+  shared_examples 'test all' do |raises|
+    let(:sampler_app) { RackRequestHelper::SamplerApp.new }
+    let(:env) { Rack::MockRequest.env_for('/some_path', input: 'whatever') }
+
+    before do
+      allow(RackRequestHelper::SamplerApp)
+        .to receive(:new).and_return(sampler_app)
+    end
+
+    include_context 'passed env'
+    include_context 'response', raises
+    include_context 'creating event'
   end
 
   context 'when app returns a response' do
     let(:action) { -> { app.call(env.dup) } }
-    include_context 'passed env'
-    include_context 'response', false
+    let(:response) { [502, { 'H' => 'V' }, 'my body'] }
+    include_examples 'test all', false
   end
 
   context 'when app raises' do
     let(:action) do
       -> { app.call(env.dup) rescue nil } # rubocop:disable Style/RescueModifier
     end
-    let(:error) { RuntimeError.new('oops') }
-    before { allow(sampler_app).to receive(:call).and_raise(error) }
-    include_context 'passed env'
-    include_context 'response', true
+    let(:response) { RuntimeError.new('oops') }
+    before { allow(sampler_app).to receive(:call).and_raise(response) }
+    include_context 'test all', true
   end
 end
