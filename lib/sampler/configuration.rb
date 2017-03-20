@@ -60,5 +60,11 @@ module Sampler
     def storage
       @storage ||= Storage.new
     end
+
+    private
+
+    def processor
+      @processor ||= Processor.new
+    end
   end
 end
