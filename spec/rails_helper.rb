@@ -9,7 +9,7 @@ end
 require 'spec_helper'
 require 'rspec/rails'
 require 'shoulda-matchers'
-require 'factory_girl'
+require 'factory_girl_rails'
 
 ActiveRecord::Migration.maintain_test_schema!
 
@@ -23,7 +23,6 @@ RSpec.configure do |config|
   config.alias_it_should_behave_like_to :include_context
 
   config.before(:suite) do
-    FactoryGirl.find_definitions
     FactoryGirl.lint
   end
   config.after { Sampler.instance_variable_set(:@configuration, nil) }
