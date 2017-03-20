@@ -19,6 +19,7 @@ describe Sampler::Event do
   it { should respond_to(:response) }
   it { should respond_to(:response_body) }
   it { should respond_to(:updated_at) }
+  it { should respond_to(:tags) }
 
   shared_context 'Time.now.utc attribute' do |attr_name|
     let(:time) { Time.now.in_time_zone("Nuku'alofa") }
@@ -90,6 +91,9 @@ describe Sampler::Event do
     context '#updated_at' do
       it { expect(event.updated_at).to be_nil }
     end
+    context '#tags' do
+      it { expect(event.tags).to be_nil }
+    end
 
     context 'passed request.body' do
       it 'should be unwinded' do
@@ -146,6 +150,48 @@ describe Sampler::Event do
       include_examples 'do not change initialized attribute', 'params'
       include_examples 'do not change initialized attribute', 'request_body'
       include_examples 'do not change initialized attribute', 'created_at'
+
+      context '#tags' do
+        it { expect(event.tags).not_to be_nil }
+        it { expect(event.tags).to be_empty }
+        it { expect(event.tags).to respond_to(:<<) }
+        it { expect(event.tags).not_to be_frozen }
+      end
+
+      context '#to_h' do
+        let(:keys) do
+          %i(endpoint url request_method params request_body created_at
+             response_body updated_at tags)
+        end
+        it { expect(event.to_h).to be_instance_of(Hash) }
+        it 'should have proper keys' do
+          expect(event.to_h.keys).to eq(keys)
+        end
+
+        context 'tagging' do
+          let(:configuration) { Sampler.configuration }
+          subject(:action) { -> { event.to_h } }
+
+          before do
+            configuration.tag_with 'should_raise', ->(_e) { raise 'oops' }
+            3.times do |n|
+              configuration.tag_with "tag#{n}", ->(_e) { n != 1 }
+            end
+          end
+          it 'should return proper tags' do
+            should change(event, :tags).to(match_array(%w(tag0 tag2)))
+          end
+          it 'should freeze tags' do
+            should change(event.tags, :frozen?).to(true)
+          end
+          it 'should log a warning if setting tag raised' do
+            message = 'Got RuntimeError (oops) while trying to set tag ' +
+                      %("should_raise" on #{event})
+            expect(Sampler.logger).to receive(:warn).with(message)
+            event.to_h
+          end
+        end
+      end
     end
 
     context 'when Exception is passed' do

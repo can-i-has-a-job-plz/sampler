@@ -2,6 +2,9 @@
 
 describe Sampler::Configuration do
   subject(:configuration) { described_class.new }
+  let(:rescued_action) do
+    -> { action.call rescue nil } # rubocop:disable Style/RescueModifier
+  end
 
   context 'after initialization' do
     it { should_not be_running }
@@ -18,6 +21,13 @@ describe Sampler::Configuration do
       it { expect(subject.blacklist).to respond_to(:include?) }
       it { expect(subject.blacklist).to respond_to(:<<) }
       it { expect(subject.blacklist).to be_empty }
+    end
+    context '#tags' do
+      subject(:tags) { configuration.tags }
+      it { should_not be_nil }
+      it { should respond_to(:each_pair) }
+      it { should respond_to(:[]=) }
+      it { should be_empty }
     end
   end
 
@@ -46,9 +56,6 @@ describe Sampler::Configuration do
   context '#whitelist=' do
     let(:object) { Object.new }
     subject(:action) { -> { configuration.whitelist = object } }
-    let(:rescued_action) do
-      -> { action.call rescue nil } # rubocop:disable Style/RescueModifier
-    end
 
     context 'when nil' do
       let(:object) { nil }
@@ -93,5 +100,60 @@ describe Sampler::Configuration do
       expect(subject.logger).to be_a(Logger)
     end
     it { should respond_to(:logger=) }
+  end
+
+  context '#tag_with' do
+    subject(:action) { -> { configuration.tag_with('name', filter) } }
+    let(:error_message) { 'tag filter should be nil or callable with arity 1' }
+    let(:tags) { configuration.tags }
+
+    shared_examples '#tag_with with callable & arity' do |callable, arity|
+      description = 'when filter is '
+      description += "#{'not ' unless callable}callable "
+      description += if arity then "with arity #{arity}"
+                     else 'and does not respond_to?(:arity)'
+                     end
+      context description do
+        let(:filter) do
+          obj = Object.new
+          allow(obj).to receive(:respond_to?).and_return(true)
+          if arity
+            allow(obj).to receive(:arity).and_return(arity)
+          else
+            allow(obj).to receive(:respond_to?).with(:arity).and_return(false)
+          end
+          return obj if callable
+          allow(obj).to receive(:respond_to?).with(:call).and_return(false)
+          obj
+        end
+        if callable && arity.equal?(1)
+          it { should change { tags.key?('name') }.to(true) }
+          it { should change { tags['name'] }.to(filter) }
+        else
+          it do
+            should raise_error(ArgumentError).with_message(error_message)
+          end
+          it { expect(rescued_action).not_to change(configuration, :tags) }
+        end
+      end
+    end
+
+    [true, false].product([false, *(0..2)]).each do |callable, arity|
+      include_examples '#tag_with with callable & arity', callable, arity
+    end
+
+    context 'when filter is nil' do
+      let(:filter) { nil }
+      context 'when tag does not exist' do
+        before { tags.delete('name') }
+        it { should_not change(configuration, :tags) }
+      end
+      context 'when tag already exists' do
+        before { configuration.tag_with('name', ->(x) {}) }
+        it 'should remove tag' do
+          should change { tags.key?('name') }.to(false)
+        end
+      end
+    end
   end
 end

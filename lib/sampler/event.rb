@@ -2,7 +2,7 @@
 
 module Sampler
   Event = Struct.new(:endpoint, :url, :request_method, :params, :request_body,
-                     :created_at, :response_body, :updated_at)
+                     :created_at, :response_body, :updated_at, :tags)
 
   class Event # :nodoc:
     # TODO: check input classes/duck_type?
@@ -26,7 +26,27 @@ module Sampler
       self.response_body = response.body.freeze
       resp
     ensure
+      self.tags = []
       freeze
+    end
+
+    def to_h
+      tag_self unless tags.frozen?
+      super
+    end
+
+    private
+
+    def tag_self
+      Sampler.configuration.tags.each_pair do |name, filter|
+        begin
+          tags << name if filter.call(self)
+        rescue => e
+          Sampler.logger.warn("Got #{e.class} (#{e}) while trying to set " \
+                              "tag #{name.inspect} on #{self}")
+        end
+      end
+      tags.freeze
     end
   end
 end
