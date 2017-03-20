@@ -10,6 +10,7 @@ require 'spec_helper'
 require 'rspec/rails'
 require 'shoulda-matchers'
 require 'factory_girl_rails'
+require 'database_cleaner'
 
 ActiveRecord::Migration.maintain_test_schema!
 
@@ -24,7 +25,16 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     FactoryGirl.lint
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
   end
+
+  config.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
+  end
+
   config.after { Sampler.instance_variable_set(:@configuration, nil) }
 end
 
