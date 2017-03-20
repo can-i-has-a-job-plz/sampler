@@ -11,6 +11,7 @@ require 'rspec/rails'
 require 'shoulda-matchers'
 require 'factory_girl_rails'
 require 'database_cleaner'
+require 'shoulda-matchers'
 
 ActiveRecord::Migration.maintain_test_schema!
 
