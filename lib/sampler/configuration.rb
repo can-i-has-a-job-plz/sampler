@@ -2,11 +2,16 @@
 
 require 'set'
 require 'logger'
+require 'forwardable'
 
 module Sampler
   class Configuration # :nodoc:
+    extend Forwardable
+
     attr_reader :whitelist, :blacklist
     attr_accessor :logger
+
+    def_delegators :storage, :events
 
     def initialize
       @running = false
@@ -50,6 +55,10 @@ module Sampler
 
     def tags
       @tags ||= {}
+    end
+
+    def storage
+      @storage ||= Storage.new
     end
   end
 end

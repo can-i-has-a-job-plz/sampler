@@ -6,6 +6,8 @@ describe Sampler::Configuration do
     -> { action.call rescue nil } # rubocop:disable Style/RescueModifier
   end
 
+  it { should delegate_method(:events).to(:storage) }
+
   context 'after initialization' do
     it { should_not be_running }
     context '#whitelist' do
@@ -155,5 +157,9 @@ describe Sampler::Configuration do
         end
       end
     end
+  end
+
+  context '#storage' do
+    it { expect(configuration.storage).to be_instance_of(Sampler::Storage) }
   end
 end

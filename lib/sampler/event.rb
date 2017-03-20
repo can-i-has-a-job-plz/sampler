@@ -28,6 +28,7 @@ module Sampler
     ensure
       self.tags = []
       freeze
+      Sampler.configuration.storage << self
     end
 
     def to_h

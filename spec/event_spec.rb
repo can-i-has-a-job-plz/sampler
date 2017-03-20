@@ -129,6 +129,7 @@ describe Sampler::Event do
   context 'after finalize' do
     before { new_event }
     let(:finalize) { -> { new_event.finalize(resp) } }
+    let(:storage) { Sampler.configuration.storage }
     subject(:event) do
       finalize.call
       new_event
@@ -150,6 +151,18 @@ describe Sampler::Event do
       include_examples 'do not change initialized attribute', 'params'
       include_examples 'do not change initialized attribute', 'request_body'
       include_examples 'do not change initialized attribute', 'created_at'
+
+      it 'should add itself to Storage' do
+        expect(finalize).to change(storage, :events).to([new_event])
+      end
+
+      context 'when Storage has events' do
+        let!(:events) { create_list(:event, 3) }
+        it 'should not delete events in Storage' do
+          finalize.call
+          expect(storage.events).to(match_array([new_event, *events]))
+        end
+      end
 
       context '#tags' do
         it { expect(event.tags).not_to be_nil }
