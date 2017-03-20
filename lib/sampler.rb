@@ -3,6 +3,7 @@
 require 'forwardable'
 require 'sampler/version'
 require 'sampler/railtie'
+require 'sampler/engine'
 
 # Just a namespace for all Sampler code
 module Sampler

@@ -3,6 +3,7 @@ AllCops:
   DisplayCopNames: true
   Exclude:
     - 'vendor/bundle/**/*'
+    - 'spec/dummy/**/*'
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*.rb'
