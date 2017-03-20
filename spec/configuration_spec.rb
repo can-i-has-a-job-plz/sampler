@@ -87,4 +87,11 @@ describe Sampler::Configuration do
       end
     end
   end
+
+  context '#logger' do
+    it 'should be Logger after initialization' do
+      expect(subject.logger).to be_a(Logger)
+    end
+    it { should respond_to(:logger=) }
+  end
 end

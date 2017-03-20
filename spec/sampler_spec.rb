@@ -9,6 +9,7 @@ describe Sampler do
   it { should delegate_method(:stop).to(:configuration) }
   it { should delegate_method(:running?).to(:configuration) }
   it { should delegate_method(:sampled?).to(:configuration) }
+  it { should delegate_method(:logger).to(:configuration) }
 
   context '.configuration' do
     subject(:configuration) { Sampler.configuration }

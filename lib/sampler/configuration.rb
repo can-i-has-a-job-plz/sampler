@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'set'
+require 'logger'
 
 module Sampler
   class Configuration # :nodoc:
     attr_reader :whitelist, :blacklist
+    attr_accessor :logger
 
     def initialize
       @running = false
@@ -12,6 +14,7 @@ module Sampler
       #   will not be any issues if user will add other object, so skip for now
       @whitelist = /\a\Z/
       @blacklist = Set.new
+      @logger = Logger.new(nil)
     end
 
     def whitelist=(value)
