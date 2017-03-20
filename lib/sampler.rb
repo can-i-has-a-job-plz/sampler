@@ -10,6 +10,7 @@ module Sampler
   autoload :Event, 'sampler/event'
   autoload :Configuration, 'sampler/configuration'
   autoload :Storage, 'sampler/storage'
+  autoload :Processor, 'sampler/processor'
 
   extend SingleForwardable
 
