@@ -36,7 +36,10 @@ RSpec.configure do |config|
     end
   end
 
-  config.after { Sampler.instance_variable_set(:@configuration, nil) }
+  config.after do
+    Sampler.stop
+    Sampler.instance_variable_set(:@configuration, nil)
+  end
 end
 
 Shoulda::Matchers.configure do |config|
