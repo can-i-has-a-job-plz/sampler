@@ -81,7 +81,7 @@ module Sampler
     def executor
       @executor ||= Concurrent::TimerTask.new(executor_opts) do
         processor.process
-      end
+      end.with_observer(ExecutorObserver.new)
     end
 
     def executor_opts

@@ -11,6 +11,7 @@ module Sampler
   autoload :Configuration, 'sampler/configuration'
   autoload :Storage, 'sampler/storage'
   autoload :Processor, 'sampler/processor'
+  autoload :ExecutorObserver, 'sampler/executor_observer'
 
   extend SingleForwardable
 
