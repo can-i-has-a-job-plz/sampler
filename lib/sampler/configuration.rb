@@ -13,6 +13,18 @@ module Sampler
 
     def_delegators :storage, :events
 
+    def self.positive_integer_attr(name)
+      attr_reader name
+      define_method("#{name}=") do |n|
+        if n.respond_to?(:to_i) && n.to_i.positive?
+          return instance_variable_set("@#{name}", n.to_i)
+        end
+        raise ArgumentError, "#{name} should be positive integer"
+      end
+    end
+
+    positive_integer_attr :execution_interval
+
     def initialize
       @running = false
       # TODO: we should check that blacklisted values is_a?(String), but there
@@ -20,6 +32,7 @@ module Sampler
       @whitelist = /\a\Z/
       @blacklist = Set.new
       @logger = Logger.new(nil)
+      @execution_interval = 60
     end
 
     def whitelist=(value)
@@ -38,15 +51,17 @@ module Sampler
     end
 
     def start
-      @running = true
+      executor.execute
     end
 
     def stop
-      @running = false
+      executor.kill
+      executor.wait_for_termination
+      # TODO: save outstanding events
     end
 
     def running?
-      @running
+      executor.running?
     end
 
     def sampled?(endpoint)
@@ -62,6 +77,19 @@ module Sampler
     end
 
     private
+
+    def executor
+      @executor ||= Concurrent::TimerTask.new(executor_opts) do
+        processor.process
+      end
+    end
+
+    def executor_opts
+      { execution_interval: execution_interval,
+        timeout_interval: execution_interval,
+        fallback_policy: :discard,
+        run_now: true }
+    end
 
     def processor
       @processor ||= Processor.new

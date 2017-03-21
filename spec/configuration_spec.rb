@@ -162,4 +162,59 @@ describe Sampler::Configuration do
   context '#storage' do
     it { expect(configuration.storage).to be_instance_of(Sampler::Storage) }
   end
+
+  shared_examples 'positive_integer_attr' do |name, default_value = nil|
+    context "##{name}" do
+      it { expect(configuration).to respond_to(name) }
+      it 'should have proper value after initialization' do
+        expect(configuration.public_send(name)).to eql(default_value)
+      end
+    end
+
+    context "##{name}=" do
+      subject(:action) { -> { configuration.public_send("#{name}=", value) } }
+
+      it { expect(configuration).to respond_to("#{name}=") }
+      context 'with value' do
+        let(:error_message) { "#{name} should be positive integer" }
+
+        shared_examples 'wrong value' do
+          it { should raise_error(ArgumentError).with_message(error_message) }
+          it do
+            expect(rescued_action)
+              .not_to(change { configuration.public_send(name) })
+          end
+        end
+
+        context 'when nil' do
+          let(:value) { nil }
+          include_examples 'wrong value'
+        end
+
+        context 'when #respond_to?(:to_i)' do
+          let(:value) { Object.new }
+          include_examples 'wrong value'
+        end
+
+        context 'when #respond_to?(:to_i)' do
+          context 'when positive' do
+            let(:value) { '123' }
+            it do
+              should change { configuration.public_send(name) }.to(value.to_i)
+            end
+          end
+          context 'when zero' do
+            let(:value) { '0' }
+            include_examples 'wrong value'
+          end
+          context 'when negative' do
+            let(:value) { '-123' }
+            include_examples 'wrong value'
+          end
+        end
+      end
+    end
+  end
+
+  include_examples 'positive_integer_attr', :execution_interval, 60
 end
