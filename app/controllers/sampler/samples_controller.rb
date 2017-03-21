@@ -8,6 +8,16 @@ module Sampler
       grouped_index
     end
 
+    def destroy_all
+      for_delete = if params[:endpoint] && params[:request_method]
+                     Sample.where(endpoint: params[:endpoint],
+                                  request_method: params[:request_method])
+                   else
+                     Sample
+                   end
+      for_delete.delete_all
+    end
+
     private
 
     def grouped_index

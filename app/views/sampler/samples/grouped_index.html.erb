@@ -6,6 +6,7 @@
       <th>Request Method</th>
       <th>Count</th>
       <th>Sampled?</th>
+      <th>Delete</th>
   </thead>
   <tbody>
     <% @samples.each do |endpoint, request_method, count, sampled| %>
@@ -14,7 +15,9 @@
         <td><%= request_method %></td>
         <td><%= count %></td>
         <td><%= sampled %></td>
+        <td><%= button_to 'Delete', sampler.all_samples_path(endpoint: endpoint, request_method: request_method), method: :delete if count > 0%></td>
       </tr>
     <% end %>
   </tbody>
 </table>
+<%= button_to 'Delete all samples', sampler.all_samples_path, method: :delete %>
