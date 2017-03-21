@@ -20,7 +20,7 @@ describe 'sampler/samples/grouped_index' do
   end
 
   it 'should have proper columns count' do
-    expect(page.all(:xpath, '//tbody/tr[count(./td) = 4]').count)
+    expect(page.all(:xpath, '//tbody/tr[count(./td) = 5]').count)
       .to eql(samples.count)
   end
 
