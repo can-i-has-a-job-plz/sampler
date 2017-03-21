@@ -1,0 +1,20 @@
+<br>
+<table id="grouped_samples">
+  <thead>
+    <tr>
+      <th>Endpoint</th>
+      <th>Request Method</th>
+      <th>Count</th>
+      <th>Sampled?</th>
+  </thead>
+  <tbody>
+    <% @samples.each do |endpoint, request_method, count, sampled| %>
+      <tr>
+        <td><%= endpoint %></td>
+        <td><%= request_method %></td>
+        <td><%= count %></td>
+        <td><%= sampled %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
