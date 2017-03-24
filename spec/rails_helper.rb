@@ -12,6 +12,7 @@ require 'shoulda-matchers'
 require 'factory_girl_rails'
 require 'database_cleaner'
 require 'shoulda-matchers'
+require 'capybara/rails'
 
 ActiveRecord::Migration.maintain_test_schema!
 
