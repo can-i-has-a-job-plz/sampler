@@ -29,6 +29,12 @@ module Sampler
       @sample = Sample.find(params[:id])
     end
 
+    def destroy
+      Sample.find(params[:id]).destroy
+      flash[:success] = "Sample #{params[:id]} was deleted"
+      redirect_to action: :index
+    end
+
     private
 
     def grouped_index

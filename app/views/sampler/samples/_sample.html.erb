@@ -3,4 +3,5 @@
   <td><%= sample.url %></td>
   <td><%= sample.params %></td>
   <td><%= sample.tags %></td>
+  <td><%= link_to("Delete sample", sampler.sample_path(sample), method: :delete) %></td>
 </tr>
