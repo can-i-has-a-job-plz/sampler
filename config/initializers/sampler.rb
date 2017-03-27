@@ -16,6 +16,10 @@ Sampler.configure do |config|
   # Execution interval (seconds) -- how often Samples will be saved from
   # temporary storage into DB.
   config.execution_interval = 60
+
+  # Maximum number of samples for the [endpoint, request_method] tuple.
+  # Old samples will be deleted if exceeded. No limit if nil.
+  # config.max_per_endpoint = nil
 end
 
 # start Sampler, can be stopped with `Sampler.stop`
