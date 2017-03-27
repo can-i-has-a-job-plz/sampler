@@ -1,19 +1,26 @@
 <h2>Samples for endpoint <%= @endpoint %>, request method: <%= @request_method %></h2>
+<%= form_for :samples, url: sampler.samples_path, method: :get do |f| %>
+  <%= hidden_field_tag 'endpoint', @endpoint %>
+  <%= hidden_field_tag 'request_method', @request_method %>
+  <%= label_tag :tags, "Tags"  %>
+  <%= text_field_tag(:tags, @tags, placeholder: 'Comma separated tags') %>
+  <%= f.submit "Filter samples" %>
+<% end %>
 <br>
 <%= form_for :samples, url: sampler.samples_path, method: :delete do |f| %>
-<table id="samples" class="table table-striped">
-  <thead>
-    <tr>
-      <th>Id</th>
-      <th>Url</th>
-      <th>Params</th>
-      <th>Tags</th>
-      <th>Delete</th>
-      <th>Check for mass delete</th>
-  </thead>
-  <tbody>
-    <%= render @samples %>
-  </tbody>
-</table>
-<%= f.submit 'Delete samples' %>
+  <table id="samples" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Url</th>
+        <th>Params</th>
+        <th>Tags</th>
+        <th>Delete</th>
+        <th>Check for mass delete</th>
+    </thead>
+    <tbody>
+      <%= render @samples %>
+    </tbody>
+  </table>
+  <%= f.submit 'Delete samples' %>
 <% end %>
