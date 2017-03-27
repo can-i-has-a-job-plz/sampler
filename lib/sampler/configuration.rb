@@ -27,6 +27,7 @@ module Sampler
 
     positive_integer_attr :execution_interval, false
     positive_integer_attr :max_per_endpoint
+    positive_integer_attr :max_per_interval
 
     def initialize
       @running = false

@@ -8,7 +8,7 @@ module Sampler
 
     def process
       Sample.connection_pool.with_connection do
-        saved = save_events
+        saved = save_events(max_per_interval)
         clean_max_per_endpoint(max_per_endpoint)
         saved
       end
@@ -20,10 +20,15 @@ module Sampler
       Sampler.configuration
     end
 
-    def_delegators :configuration, :events, :max_per_endpoint
+    def_delegators :configuration, :events, :max_per_endpoint, :max_per_interval
 
-    def save_events
-      events.count { |event| save(event) }
+    def save_events(max_count)
+      saved_count = 0
+      events.each do |event|
+        saved_count += 1 if save(event)
+        break if max_count && saved_count >= max_count
+      end
+      saved_count
     end
 
     def save(event)
