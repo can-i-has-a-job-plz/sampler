@@ -5,7 +5,14 @@ require_dependency 'sampler/application_controller'
 module Sampler
   class SamplesController < ApplicationController # :nodoc:
     def index
-      grouped_index
+      unless params.key?(:endpoint) && params.key?(:request_method)
+        return grouped_index
+      end
+      @endpoint = params[:endpoint]
+      @request_method = params[:request_method]
+      @samples = Sample.order(:id)
+                       .where(endpoint: @endpoint,
+                              request_method: @request_method)
     end
 
     def destroy_all

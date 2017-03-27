@@ -11,7 +11,7 @@
   <tbody>
     <% @samples.each do |endpoint, request_method, count, sampled| %>
       <tr>
-        <td><%= endpoint %></td>
+        <td><%= count.zero? ? endpoint : link_to(endpoint, sampler.samples_path(endpoint: endpoint, request_method: request_method)) %></td>
         <td><%= request_method %></td>
         <td><%= count %></td>
         <td><%= sampled %></td>
