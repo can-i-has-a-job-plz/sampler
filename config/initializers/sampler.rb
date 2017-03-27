@@ -20,6 +20,10 @@ Sampler.configure do |config|
   # Maximum number of samples for the [endpoint, request_method] tuple.
   # Old samples will be deleted if exceeded. No limit if nil.
   # config.max_per_endpoint = nil
+
+  # Maximum number of samples that will be saved on each execution.
+  # No limit if nil.
+  # config.max_per_interval = nil
 end
 
 # start Sampler, can be stopped with `Sampler.stop`

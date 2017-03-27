@@ -23,7 +23,7 @@ describe Sampler::Processor do
       end
 
       it 'should return saved samples count' do
-        expect(described_class.new.process).to equal(valid_events.size)
+        expect(described_class.new.process).to equal(saved_count)
       end
 
       context 'saved Samples' do
@@ -55,15 +55,29 @@ describe Sampler::Processor do
       end
     end
 
+    # TODO: test all combinations
+
     context 'when max_per_endpoint nil' do
       before { Sampler.configuration.max_per_endpoint = nil }
       let(:saved_events) { valid_events }
+      let(:saved_count) { saved_events.count }
       include_examples 'saving events'
     end
 
     context 'when max_per_endpoint is set' do
       before { Sampler.configuration.max_per_endpoint = 2 }
       let(:saved_events) { valid_events[1..-4] + valid_events[-2..-1] }
+      let(:saved_count) { valid_events.count }
+      include_examples 'saving events'
+    end
+
+    context 'when max_per_interval is set' do
+      before { Sampler.configuration.max_per_interval = 5 }
+      let(:events) do
+        [*valid_events[0..3], *invalid_events, *valid_events[4..-1]]
+      end
+      let(:saved_events) { valid_events[0..4] }
+      let(:saved_count) { saved_events.count }
       include_examples 'saving events'
     end
   end
