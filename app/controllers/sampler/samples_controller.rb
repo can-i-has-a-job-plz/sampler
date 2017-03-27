@@ -13,6 +13,7 @@ module Sampler
       @samples = Sample.order(:id)
                        .where(endpoint: @endpoint,
                               request_method: @request_method)
+      filter_tags
     end
 
     def destroy_all
@@ -50,6 +51,13 @@ module Sampler
                            .map { |(ep, m), cnt| [ep, m, cnt, sampled?(ep)] }
                            .sort { |x, y| compare_samples(x, y) }
       render :grouped_index
+    end
+
+    def filter_tags
+      return unless params.key?(:tags)
+      @tags = params[:tags].split(',').map(&:strip)
+      @samples = @samples.with_tags(@tags)
+      @tags = @tags.join(', ')
     end
 
     def compare_samples(x, y)

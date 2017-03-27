@@ -166,6 +166,20 @@ feature 'samples/index' do
         should change { Sampler::Sample.where(id: for_delete).count }.to(0)
       end
     end
+
+    context 'Tag filtering' do
+      before do
+        samples.first.update(tags: ['tag1'])
+        samples.last.update(tags: ['tag2'])
+        fill_in(:tags, with: 'tag1, tag2')
+        click_on('Filter samples')
+      end
+      it 'should show only matching samples' do
+        should have_xpath('//tbody/tr', count: 2)
+        should have_xpath("//tbody/tr[@id='sample#{samples.first.id}']")
+        should have_xpath("//tbody/tr[@id='sample#{samples.last.id}']")
+      end
+    end
   end
 end
 
