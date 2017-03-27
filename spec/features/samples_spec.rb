@@ -114,4 +114,27 @@ feature 'samples/index' do
       end
     end
   end
+
+  describe 'when endpoint and requeset_method in params' do
+    let!(:samples) do
+      create_list(:sample, 3, endpoint: '/endpoint', request_method: 'GET')
+    end
+
+    before do
+      create_list(:sample, 2, endpoint: '/endpoint', request_method: 'POST')
+      create_list(:sample, 2, endpoint: '/endpoint2', request_method: 'GET')
+      visit sampler.samples_path(endpoint: '/endpoint', request_method: 'GET')
+    end
+
+    let(:samples_count) { base_samples.size + 2 }
+
+    it do
+      should have_text('Samples for endpoint /endpoint, request method: GET')
+    end
+    it { should have_table('samples') }
+    it 'should have row for each matching sample' do
+      expect(page.all('//tbody/tr/td[1]').map(&:text))
+        .to eql(samples.map(&:id).map(&:to_s))
+    end
+  end
 end
