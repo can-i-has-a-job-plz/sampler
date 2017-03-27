@@ -27,6 +27,8 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     FactoryGirl.lint
+    # lint could add events to the queue, so we clear it
+    Sampler.configuration.events
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
   end

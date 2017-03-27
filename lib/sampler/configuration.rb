@@ -13,17 +13,20 @@ module Sampler
 
     def_delegators :storage, :events
 
-    def self.positive_integer_attr(name)
+    def self.positive_integer_attr(name, allow_nil = true)
       attr_reader name
       define_method("#{name}=") do |n|
         if n.respond_to?(:to_i) && n.to_i.positive?
           return instance_variable_set("@#{name}", n.to_i)
         end
-        raise ArgumentError, "#{name} should be positive integer"
+        return instance_variable_set("@#{name}", nil) if allow_nil && n.nil?
+        raise ArgumentError, "#{name} should be positive integer" \
+                             "#{' or nil' if allow_nil}"
       end
     end
 
-    positive_integer_attr :execution_interval
+    positive_integer_attr :execution_interval, false
+    positive_integer_attr :max_per_endpoint
 
     def initialize
       @running = false

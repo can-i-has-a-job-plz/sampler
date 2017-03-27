@@ -163,7 +163,7 @@ describe Sampler::Configuration do
     it { expect(configuration.storage).to be_instance_of(Sampler::Storage) }
   end
 
-  shared_examples 'positive_integer_attr' do |name, default_value = nil|
+  shared_examples 'positive_integer_attr' do |name, default_value = nil, allow_nil = true| # rubocop:disable Metrics/LineLength
     context "##{name}" do
       it { expect(configuration).to respond_to(name) }
       it 'should have proper value after initialization' do
@@ -176,7 +176,9 @@ describe Sampler::Configuration do
 
       it { expect(configuration).to respond_to("#{name}=") }
       context 'with value' do
-        let(:error_message) { "#{name} should be positive integer" }
+        let(:error_message) do
+          "#{name} should be positive integer#{' or nil' if allow_nil}"
+        end
 
         shared_examples 'wrong value' do
           it { should raise_error(ArgumentError).with_message(error_message) }
@@ -188,7 +190,13 @@ describe Sampler::Configuration do
 
         context 'when nil' do
           let(:value) { nil }
-          include_examples 'wrong value'
+          before { configuration.public_send("#{name}=", 1) }
+
+          if allow_nil
+            it { should change { configuration.public_send(name) }.to(nil) }
+          else
+            include_examples 'wrong value'
+          end
         end
 
         context 'when #respond_to?(:to_i)' do
@@ -216,5 +224,6 @@ describe Sampler::Configuration do
     end
   end
 
-  include_examples 'positive_integer_attr', :execution_interval, 60
+  include_examples 'positive_integer_attr', :execution_interval, 60, false
+  include_examples 'positive_integer_attr', :max_per_endpoint
 end
