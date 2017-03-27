@@ -1,5 +1,6 @@
 <h2>Samples for endpoint <%= @endpoint %>, request method: <%= @request_method %></h2>
 <br>
+<%= form_for :samples, url: sampler.samples_path, method: :delete do |f| %>
 <table id="samples" class="table table-striped">
   <thead>
     <tr>
@@ -8,8 +9,11 @@
       <th>Params</th>
       <th>Tags</th>
       <th>Delete</th>
+      <th>Check for mass delete</th>
   </thead>
   <tbody>
     <%= render @samples %>
   </tbody>
 </table>
+<%= f.submit 'Delete samples' %>
+<% end %>
