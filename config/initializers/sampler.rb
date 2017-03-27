@@ -24,6 +24,10 @@ Sampler.configure do |config|
   # Maximum number of samples that will be saved on each execution.
   # No limit if nil.
   # config.max_per_interval = nil
+
+  # How long samples will be stored in DB (in seconds)
+  # Do not delete old samples if nil.
+  # config.retention_period = nil
 end
 
 # start Sampler, can be stopped with `Sampler.stop`
