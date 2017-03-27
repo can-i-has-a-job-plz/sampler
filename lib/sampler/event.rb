@@ -36,6 +36,11 @@ module Sampler
       super
     end
 
+    def duration
+      return if updated_at.nil?
+      updated_at - created_at
+    end
+
     private
 
     def tag_self
