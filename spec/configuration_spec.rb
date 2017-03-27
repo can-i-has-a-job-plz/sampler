@@ -227,4 +227,5 @@ describe Sampler::Configuration do
   include_examples 'positive_integer_attr', :execution_interval, 60, false
   include_examples 'positive_integer_attr', :max_per_endpoint
   include_examples 'positive_integer_attr', :max_per_interval
+  include_examples 'positive_integer_attr', :retention_period
 end

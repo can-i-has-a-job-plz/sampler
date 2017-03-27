@@ -80,5 +80,22 @@ describe Sampler::Processor do
       let(:saved_count) { saved_events.count }
       include_examples 'saving events'
     end
+
+    context 'when retention_period is set' do
+      before do
+        Sampler.configuration.events # Clear
+        Sampler.configuration.retention_period = 600
+      end
+      let!(:old_samples) { create_list(:sample, 5, created_at: 601.second.ago) }
+      let(:old_ids) { old_samples.map(&:id) }
+      let!(:new_samples) { create_list(:sample, 3) }
+
+      it 'should delete proper number of samples' do
+        should change(Sampler::Sample, :count).by(-old_samples.size)
+      end
+      it 'should delete proper samples' do
+        should change { Sampler::Sample.where(id: old_ids).count }.to(0)
+      end
+    end
   end
 end

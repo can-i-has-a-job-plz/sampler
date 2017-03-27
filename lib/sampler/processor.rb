@@ -10,6 +10,7 @@ module Sampler
       Sample.connection_pool.with_connection do
         saved = save_events(max_per_interval)
         clean_max_per_endpoint(max_per_endpoint)
+        clean_retention_period(retention_period)
         saved
       end
     end
@@ -20,7 +21,8 @@ module Sampler
       Sampler.configuration
     end
 
-    def_delegators :configuration, :events, :max_per_endpoint, :max_per_interval
+    def_delegators :configuration, :events, :max_per_endpoint,
+                   :max_per_interval, :retention_period
 
     def save_events(max_count)
       saved_count = 0
@@ -57,6 +59,12 @@ module Sampler
             .order(created_at: :desc)
             .limit(count)
             .select(:id)
+    end
+
+    def clean_retention_period(period)
+      return if period.nil?
+      Sample.where('created_at < ?', period.seconds.ago)
+            .delete_all
     end
   end
 end
