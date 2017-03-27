@@ -134,7 +134,15 @@ feature 'samples/index' do
     it { should have_table('samples') }
     it 'should have row for each matching sample' do
       expect(page.all('//tbody/tr/td[1]').map(&:text))
-        .to eql(samples.map(&:id).map(&:to_s))
+        .to eql(samples.map { |s| "Sample #{s.id}" })
     end
+  end
+end
+
+feature 'samples/show' do
+  let(:sample) { create(:sample) }
+  before { visit(sampler.sample_path(sample)) }
+  it 'should show proper sample' do
+    expect(page).to have_text("Sample #{sample.id}")
   end
 end
