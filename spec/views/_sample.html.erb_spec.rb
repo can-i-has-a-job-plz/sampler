@@ -2,6 +2,7 @@
 
 describe 'sampler/samples/_sample' do
   subject { rendered }
+  let(:page) { Capybara.string(rendered) }
   let(:sample) { create(:sample) }
   before { render(partial: 'sample', locals: { sample: sample }) }
   it 'has id sampleN' do
@@ -10,8 +11,10 @@ describe 'sampler/samples/_sample' do
   it 'has 4 columns' do
     should have_css('tr > td', count: 4)
   end
-  it 'has sample.id in first column' do
-    should have_css('td:nth-child(1)', text: sample.id)
+
+  it 'has link to sample page in first column' do
+    expect(page.find(:css, 'td:nth-child(1)'))
+      .to have_link("Sample #{sample.id}", href: sampler.sample_path(sample))
   end
   it 'has sample.url in second column' do
     should have_css('td:nth-child(2)', text: sample.url)

@@ -25,6 +25,10 @@ module Sampler
       for_delete.delete_all
     end
 
+    def show
+      @sample = Sample.find(params[:id])
+    end
+
     private
 
     def grouped_index
