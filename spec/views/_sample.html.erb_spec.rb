@@ -8,8 +8,8 @@ describe 'sampler/samples/_sample' do
   it 'has id sampleN' do
     should have_css("tr#sample#{sample.id}")
   end
-  it 'has 5 columns' do
-    should have_css('tr > td', count: 5)
+  it 'has 6 columns' do
+    should have_css('tr > td', count: 6)
   end
 
   it 'has link to sample page in first column' do
@@ -28,5 +28,10 @@ describe 'sampler/samples/_sample' do
   it 'has link to delete sample in fifth column' do
     expect(page.find(:css, 'td:nth-child(5)'))
       .to have_link('Delete sample', href: sampler.sample_path(sample))
+  end
+  it 'has checkbox for mass deletion in sixth column' do
+    opts = { type: 'checkbox', with: 1, checked: false }
+    expect(page.find(:css, 'td:nth-child(6)'))
+      .to have_field("samples[#{sample.id}][id]", opts)
   end
 end
