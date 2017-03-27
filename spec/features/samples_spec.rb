@@ -119,6 +119,7 @@ feature 'samples/index' do
     let!(:samples) do
       create_list(:sample, 3, endpoint: '/endpoint', request_method: 'GET')
     end
+    let(:sample) { samples.second }
 
     before do
       create_list(:sample, 2, endpoint: '/endpoint', request_method: 'POST')
@@ -135,6 +136,19 @@ feature 'samples/index' do
     it 'should have row for each matching sample' do
       expect(page.all('//tbody/tr/td[1]').map(&:text))
         .to eql(samples.map { |s| "Sample #{s.id}" })
+    end
+
+    context 'Delete sample links' do
+      let(:link) do
+        page.find_link('Delete sample', href: sampler.sample_path(sample))
+      end
+      it 'should delete sample' do
+        expect { link.click }.to change(Sampler::Sample, :count).by(-1)
+      end
+      it 'should delete proper sample' do
+        expect { link.click }
+          .to change { Sampler::Sample.where(id: sample.id).count }.to(0)
+      end
     end
   end
 end
