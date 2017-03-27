@@ -20,6 +20,7 @@ describe Sampler::Event do
   it { should respond_to(:response_body) }
   it { should respond_to(:updated_at) }
   it { should respond_to(:tags) }
+  it { should respond_to(:duration) }
 
   shared_context 'Time.now.utc attribute' do |attr_name|
     let(:time) { Time.now.in_time_zone("Nuku'alofa") }
@@ -93,6 +94,10 @@ describe Sampler::Event do
     end
     context '#tags' do
       it { expect(event.tags).to be_nil }
+    end
+
+    context '#duration' do
+      it { expect(event.duration).to be_nil }
     end
 
     context 'passed request.body' do
@@ -203,6 +208,12 @@ describe Sampler::Event do
             expect(Sampler.logger).to receive(:warn).with(message)
             event.to_h
           end
+        end
+      end
+
+      context '#duration' do
+        it 'should be updated_at - created_at' do
+          expect(event.duration).to eql(event.updated_at - event.created_at)
         end
       end
     end
