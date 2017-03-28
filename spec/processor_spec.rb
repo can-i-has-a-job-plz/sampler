@@ -30,16 +30,23 @@ describe Sampler::Processor do
         before { action.call }
         let(:sample_attrs) do
           Sampler::Sample.all.map { |s| s.attributes.except('id') }
+                         .map do |sample_attrs|
+            sample_attrs['created_at'] = sample_attrs['created_at'].to_f
+            sample_attrs['updated_at'] = sample_attrs['updated_at'].to_f
+            sample_attrs
+          end
         end
         let(:events_attrs) do
           saved_events.map(&:to_h).map(&:stringify_keys).map do |event_attrs|
-            event_attrs['created_at'] = Time.zone.at(event_attrs['created_at'])
-            event_attrs['updated_at'] = Time.zone.at(event_attrs['updated_at'])
+            event_attrs['created_at'] = event_attrs['created_at'].to_f
+            event_attrs['updated_at'] = event_attrs['updated_at'].to_f
             event_attrs
           end
         end
 
         it 'should have proper attributes' do
+          p sample_attrs
+          p events_attrs
           expect(sample_attrs).to match_array(events_attrs)
         end
       end
