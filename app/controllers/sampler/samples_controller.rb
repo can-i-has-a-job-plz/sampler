@@ -47,9 +47,9 @@ module Sampler
 
     def grouped_index
       @samples = all_routes.merge(samples)
-                           .to_a
                            .map { |(ep, m), cnt| [ep, m, cnt, sampled?(ep)] }
-                           .sort { |x, y| compare_samples(x, y) }
+                           .sort_by { |*, cnt, s| [-cnt, s ? 0 : 1] }
+
       render :grouped_index
     end
 
@@ -58,17 +58,6 @@ module Sampler
       @tags = params[:tags].split(',').map(&:strip)
       @samples = @samples.with_tags(@tags)
       @tags = @tags.join(', ')
-    end
-
-    def compare_samples(x, y)
-      # [endpoint, request_method, count, sampled?]
-      # Sort by count and sampled?
-      if x[2] != y[2]
-        x[2] < y[2] ? 1 : -1
-      elsif x[3] != y[3]
-        x[3] ? -1 : 1
-      else 0
-      end
     end
 
     def sampled?(endpoint)
