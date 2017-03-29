@@ -40,7 +40,7 @@ describe Sampler::Storage do
     end
   end
 
-  context 'events' do
+  context '#events' do
     let(:events) { create_list(:event, 5) }
     before { events.each { |e| storage << e } }
     it 'should clear event storage' do
