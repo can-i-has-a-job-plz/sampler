@@ -90,11 +90,34 @@ feature 'samples/index' do
     end
 
     context '"Delete all samples" button' do
-      it 'should delete all samples' do
-        expect { find_button('Delete all samples').click }
-          .to change(Sampler::Sample, :count).to(0)
+      let(:action) { -> { find_button('Delete all samples').click } }
+      context 'when js is enabled', js: true do
+        it 'should request confirmation' do
+          message = accept_prompt { action.call }
+          expect(message).to eq('Really delete all samples?')
+        end
+        context 'when confirm dismissed' do
+          it 'should not delete samples' do
+            expect { dismiss_confirm { action.call } }
+              .not_to change(Sampler::Sample, :count)
+          end
+        end
+        context 'when confirm accepted' do
+          it 'should delete all samples' do
+            expect { accept_alert { action.call } }
+              .to change(Sampler::Sample, :count).to(0)
+          end
+        end
+      end
+
+      context 'when js is disabled' do
+        it 'should delete all samples' do
+          expect { find_button('Delete all samples').click }
+            .to change(Sampler::Sample, :count).to(0)
+        end
       end
     end
+
     context '"Delete" button' do
       let(:ep) do
         page.all(:xpath, '//tbody/tr[1]/td[position() <= 2]').map(&:text)
@@ -104,13 +127,39 @@ feature 'samples/index' do
       end
       subject(:action) { -> { button.click } }
 
-      it 'should delete proper number of samples' do
-        should change(Sampler::Sample, :count).by(-3)
+      context 'when js is enabled', js: true do
+        it 'should request confirmation' do
+          message = accept_prompt { action.call }
+          expect(message)
+            .to eq("Really delete samples for #{ep.second} #{ep.first}?")
+        end
+        context 'when confirm dismissed' do
+          it 'should not delete samples' do
+            expect { dismiss_confirm { action.call } }
+              .not_to change(Sampler::Sample, :count)
+          end
+        end
+        context 'when confirm accepted' do
+          it 'should delete proper number of samples' do
+            should change(Sampler::Sample, :count).by(-3)
+          end
+
+          it 'should delete all samples for endpoint & method' do
+            opts = { endpoint: ep.first, request_method: ep.last }
+            should change { Sampler::Sample.where(opts).count }.to(0)
+          end
+        end
       end
 
-      it 'should delete all samples for endpoint & method' do
-        opts = { endpoint: ep.first, request_method: ep.last }
-        should change { Sampler::Sample.where(opts).count }.to(0)
+      context 'when js is disabled' do
+        it 'should delete proper number of samples' do
+          should change(Sampler::Sample, :count).by(-3)
+        end
+
+        it 'should delete all samples for endpoint & method' do
+          opts = { endpoint: ep.first, request_method: ep.last }
+          should change { Sampler::Sample.where(opts).count }.to(0)
+        end
       end
     end
   end
@@ -159,11 +208,36 @@ feature 'samples/index' do
           click_on('Delete samples')
         end
       end
-      it 'should delete proper number of samples' do
-        should change(Sampler::Sample, :count).by(-2)
+      context 'when js is enabled', js: true do
+        it 'should request confirmation' do
+          message = accept_prompt { action.call }
+          expect(message).to eq('Really delete selected samples?')
+        end
+        context 'when confirm dismissed' do
+          it 'should not delete samples' do
+            expect { dismiss_confirm { action.call } }
+              .not_to change(Sampler::Sample, :count)
+          end
+        end
+        context 'when confirm accepted' do
+          it 'should delete proper number of samples' do
+            expect { accept_alert { action.call } }
+              .to change(Sampler::Sample, :count).by(-2)
+          end
+          it 'should delete proper samples' do
+            expect { accept_alert { action.call } }
+              .to change { Sampler::Sample.where(id: for_delete).count }.to(0)
+          end
+        end
       end
-      it 'should delete proper samples' do
-        should change { Sampler::Sample.where(id: for_delete).count }.to(0)
+
+      context 'when js is disabled' do
+        it 'should delete proper number of samples' do
+          should change(Sampler::Sample, :count).by(-2)
+        end
+        it 'should delete proper samples' do
+          should change { Sampler::Sample.where(id: for_delete).count }.to(0)
+        end
       end
     end
 

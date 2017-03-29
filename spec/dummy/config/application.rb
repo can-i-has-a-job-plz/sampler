@@ -8,7 +8,8 @@ require "action_view/railtie"
 require "active_job/railtie"
 # require "action_cable/engine"
 # require "rails/test_unit/railtie"
-# require "sprockets/railtie"
+require "sprockets/railtie"
+require 'jquery-rails'
 
 Bundler.require(*Rails.groups)
 require "sampler"

@@ -13,6 +13,7 @@ require 'factory_girl_rails'
 require 'database_cleaner'
 require 'shoulda-matchers'
 require 'capybara/rails'
+require 'capybara/poltergeist'
 
 ActiveRecord::Migration.maintain_test_schema!
 
@@ -29,9 +30,11 @@ RSpec.configure do |config|
     FactoryGirl.lint
     # lint could add events to the queue, so we clear it
     Sampler.configuration.events
-    DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
   end
+
+  config.before(:each, js: true) { DatabaseCleaner.strategy = :truncation }
+  config.before(:each, js: false) { DatabaseCleaner.strategy = :transaction }
 
   config.around(:each) do |example|
     DatabaseCleaner.cleaning do
@@ -51,3 +54,5 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
+
+Capybara.javascript_driver = :poltergeist

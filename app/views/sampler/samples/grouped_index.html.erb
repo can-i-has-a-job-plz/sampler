@@ -15,9 +15,10 @@
         <td><%= request_method %></td>
         <td><%= count %></td>
         <td><%= sampled %></td>
-        <td><%= button_to 'Delete', sampler.all_samples_path(endpoint: endpoint, request_method: request_method), method: :delete if count > 0%></td>
+        <td><%= button_to 'Delete', sampler.all_samples_path(endpoint: endpoint, request_method: request_method),
+            method: :delete, data: { confirm: "Really delete samples for #{request_method} #{endpoint}?" }  if count > 0%></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-<%= button_to 'Delete all samples', sampler.all_samples_path, method: :delete %>
+<%= button_to 'Delete all samples', sampler.all_samples_path, method: :delete, data: { confirm: "Really delete all samples?" } %>

@@ -22,5 +22,5 @@
       <%= render @samples %>
     </tbody>
   </table>
-  <%= f.submit 'Delete samples' %>
+  <%= f.submit 'Delete samples', data: { confirm: "Really delete selected samples?" } %>
 <% end %>
