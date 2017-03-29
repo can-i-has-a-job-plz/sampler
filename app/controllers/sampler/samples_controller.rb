@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require_dependency 'sampler/application_controller'
-
 module Sampler
-  class SamplesController < ApplicationController # :nodoc:
+  class SamplesController < ::ApplicationController # :nodoc:
     def index
       unless params.key?(:endpoint) && params.key?(:request_method)
         return grouped_index
