@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20170320130900) do
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
     t.index ["endpoint"], name: "index_sampler_samples_on_endpoint", using: :btree
+    t.index ["request_method"], name: "index_sampler_samples_on_request_method", using: :btree
   end
 
 end
