@@ -3,6 +3,9 @@
 module Sampler
   # Rack middleware for request sampling
   class Middleware
+    NOT_FOUND_ENDPOINT = 'not#found'
+    RESOLVE_ERROR_ENDPOINT = 'resolve#error'
+
     def initialize(app)
       @app = app
     end
@@ -37,7 +40,7 @@ module Sampler
       # Getting first route here, ignoring X-Cascade
       match, _parameters, route = find_routes(app).call(request).first
 
-      return 'not#found' if route.nil?
+      return NOT_FOUND_ENDPOINT if route.nil?
 
       if route.app.app.respond_to?(:routes)
         request.path_info = match.post_match
@@ -46,7 +49,7 @@ module Sampler
 
       "#{base_path}#{route.path.spec}"
     rescue => _e
-      'resolve#error'
+      RESOLVE_ERROR_ENDPOINT
     end
   end
 end
