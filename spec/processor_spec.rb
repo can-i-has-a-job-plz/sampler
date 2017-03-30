@@ -13,7 +13,7 @@ describe Sampler::Processor do
     let!(:events) { (valid_events + invalid_events).shuffle }
     subject(:action) { -> { described_class.new.process } }
     before do
-      Sampler.configuration.events # Clear
+      Sampler.configuration.events # Clear storage
       events.each { |e| Sampler.configuration.storage << e }
     end
 
@@ -87,7 +87,7 @@ describe Sampler::Processor do
 
     context 'when retention_period is set' do
       before do
-        Sampler.configuration.events # Clear
+        Sampler.configuration.events # Clear storage
         Sampler.configuration.retention_period = 600
       end
       let!(:old_samples) { create_list(:sample, 5, created_at: 601.second.ago) }
