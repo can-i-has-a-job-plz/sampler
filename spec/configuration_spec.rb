@@ -199,7 +199,7 @@ describe Sampler::Configuration do
           end
         end
 
-        context 'when #respond_to?(:to_i)' do
+        context 'when does not #respond_to?(:to_i)' do
           let(:value) { Object.new }
           include_examples 'wrong value'
         end
