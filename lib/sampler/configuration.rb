@@ -90,6 +90,7 @@ module Sampler
     end
 
     def executor_opts
+      # See https://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html#initialize-instance_method
       { execution_interval: execution_interval,
         timeout_interval: execution_interval,
         fallback_policy: :discard,
