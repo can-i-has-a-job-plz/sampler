@@ -13,7 +13,7 @@ module Sampler
 
     def_delegators :storage, :events
 
-    def self.positive_integer_attr(name, allow_nil = true)
+    def self.positive_integer_attr(name:, allow_nil: true)
       attr_reader name
       define_method("#{name}=") do |n|
         if n.respond_to?(:to_i) && n.to_i.positive?
@@ -25,10 +25,10 @@ module Sampler
       end
     end
 
-    positive_integer_attr :execution_interval, false
-    positive_integer_attr :max_per_endpoint
-    positive_integer_attr :max_per_interval
-    positive_integer_attr :retention_period
+    positive_integer_attr(name: :execution_interval, allow_nil: false)
+    positive_integer_attr(name: :max_per_endpoint)
+    positive_integer_attr(name: :max_per_interval)
+    positive_integer_attr(name: :retention_period)
 
     def initialize
       @running = false
