@@ -49,7 +49,7 @@ module Sampler
           tags << name if filter.call(self)
         rescue => e
           Sampler.logger.warn("Got #{e.class} (#{e}) while trying to set " \
-                              "tag #{name.inspect} on #{self}")
+                              "tag #{name.inspect} on #{self}:\n#{e.backtrace}")
         end
       end
       tags.freeze

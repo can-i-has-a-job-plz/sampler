@@ -188,10 +188,15 @@ describe Sampler::Event do
 
         context 'tagging' do
           let(:configuration) { Sampler.configuration }
+          let(:exception) do
+            e = RuntimeError.new('oops')
+            e.set_backtrace('my_backtrace')
+            e
+          end
           subject(:action) { -> { event.to_h } }
 
           before do
-            configuration.tag_with 'should_raise', ->(_e) { raise 'oops' }
+            configuration.tag_with 'should_raise', ->(_e) { raise exception }
             3.times do |n|
               configuration.tag_with "tag#{n}", ->(_e) { n != 1 }
             end
@@ -204,7 +209,7 @@ describe Sampler::Event do
           end
           it 'should log a warning if setting tag raised' do
             message = 'Got RuntimeError (oops) while trying to set tag ' +
-                      %("should_raise" on #{event})
+                      %("should_raise" on #{event}:\n#{exception.backtrace})
             expect(Sampler.logger).to receive(:warn).with(message)
             event.to_h
           end
