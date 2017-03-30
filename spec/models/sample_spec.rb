@@ -31,7 +31,7 @@ RSpec.describe Sampler::Sample, type: :model do
     end
   end
 
-  context '#with_tags' do
+  context '.with_tags' do
     subject { described_class.with_tags(tags) }
     let!(:samples) do
       Array.new(5) { |n| create(:sample, tags: ["tag#{n + 1}", 'some tags']) }
@@ -55,8 +55,7 @@ RSpec.describe Sampler::Sample, type: :model do
     context 'when there is samples with some tags given' do
       let(:tags) { ['no', 'tag1', 'tag5', 'hell no'] }
       it 'should return samples with matching tags' do
-        should include(samples.first)
-        should include(samples.last)
+        should match_array([samples.first, samples.last])
       end
     end
   end
