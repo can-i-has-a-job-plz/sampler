@@ -3,8 +3,6 @@
 module Sampler
   # Rack middleware for request sampling
   class Middleware
-    RESOLVE_ERROR = 'Got error (%s) while resolving route for %s'
-
     def initialize(app)
       @app = app
     end
